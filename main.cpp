@@ -5,6 +5,9 @@
 #include "main.h"
 #include <iostream>
 #include <boost/graph/adjacency_list.hpp>
+#include <Models/ComputationNode/ComputationNode.h>
+#include <Models/EdgeNode/EdgeNode.h>
+#include <Models/MobileNode/MobileNode.h>
 
 using namespace std;
 
@@ -26,19 +29,27 @@ int main() {
     boost::add_edge(4, 5, 6, g);
     boost::add_edge(2, 5, 7, g);
 
-    std::pair<edge_iterator, edge_iterator> ei = edges(g);
+    pair<edge_iterator, edge_iterator> ei = edges(g);
 
 
+    cout << "Number of edges = " << num_edges(g) << "\n";
+    cout << "Edge list:\n";
 
-    std::cout << "Number of edges = " << num_edges(g) << "\n";
-    std::cout << "Edge list:\n";
+    copy(ei.first, ei.second,
+         ostream_iterator<boost::adjacency_list<>::edge_descriptor>{
+                 cout, "\n"
+         });
 
-    std::copy(ei.first, ei.second,
-              std::ostream_iterator<boost::adjacency_list<>::edge_descriptor>{
-                      std::cout, "\n"
-    });
+    cout << endl;
 
-    std::cout << std::endl;
+    ComputationNode cloudNode(1, 10, 1, 1, cloud);
+    cout << "Type " << cloudNode.getType() << endl;
+
+    EdgeNode edgeNode(1, 10, 1, 1, edge, 0, 0);
+    cout << "Type " << edgeNode.getType() << endl;
+
+    MobileNode mobileNode(1, 10, 1, 1, mobile, 0, 0);
+    cout << "Type " << mobileNode.getType() << endl;
 
     return 0;
 }
