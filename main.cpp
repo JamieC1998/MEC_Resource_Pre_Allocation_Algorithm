@@ -12,27 +12,8 @@
 
 using namespace std;
 
-typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, NetworkVertexData, EdgeWeightProperty> NetworkTopology;
-typedef boost::graph_traits<NetworkTopology>::edge_iterator edge_iterator;
-typedef boost::graph_traits<NetworkTopology>::vertex_iterator vertex_iterator;
-
 int main() {
-    ComputationNode cloudNode(1, 10, 1, 1, cloud);
-    cout << "Type " << cloudNode.getType() << endl;
-
-    EdgeNode edgeNode(1, 10, 1, 1, edge, make_pair(1, 1));
-    cout << "Type " << edgeNode.getType() << endl;
-
-    MobileNode mobileNode(1, 10, 1, 1, mobile, make_pair(2, 2));
-    cout << "Type " << mobileNode.getType() << endl << endl;
-
-    NetworkTopology g;
-
-    auto v1 = boost::add_vertex({mobileNode.getType(), boost::none, boost::none, mobileNode}, g);
-    auto v2 = boost::add_vertex({cloudNode.getType(), cloudNode, boost::none, boost::none}, g);
-
-    boost::add_edge(v1, v2, 8, g);
+    NetworkTopology g = main::generateNetwork();
 
     pair<edge_iterator, edge_iterator> ei = edges(g);
 
@@ -57,4 +38,24 @@ int main() {
     }
 
     return 0;
+}
+
+NetworkTopology main::generateNetwork(){
+    ComputationNode cloudNode(1, 10, 1, 1, cloud);
+    cout << "Type " << cloudNode.getType() << endl;
+
+    EdgeNode edgeNode(1, 10, 1, 1, edge, make_pair(1, 1));
+    cout << "Type " << edgeNode.getType() << endl;
+
+    MobileNode mobileNode(1, 10, 1, 1, mobile, make_pair(2, 2));
+    cout << "Type " << mobileNode.getType() << endl << endl;
+
+    NetworkTopology g;
+
+    auto v1 = boost::add_vertex({mobileNode.getType(), boost::none, boost::none, mobileNode}, g);
+    auto v2 = boost::add_vertex({cloudNode.getType(), cloudNode, boost::none, boost::none}, g);
+
+    boost::add_edge(v1, v2, 8, g);
+
+    return g;
 }
