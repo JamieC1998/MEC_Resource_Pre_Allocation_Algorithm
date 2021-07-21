@@ -1,0 +1,96 @@
+Using Boost Graph Library (https://www.boost.org/doc/libs/1_62_0/libs/graph/doc/index.html)
+
+Application:
+    * Each application is modeled as a graph with each node within the graph representing a task
+        - Model as adjacency list
+
+    * Task:
+        - MI: 		Millions of Instructions in the task:                                   Unsigned long long int
+		- RAM: 		The amount of memory required in GB:                                    float
+		- DATA_in: 	Representing the input size in MB:                                      float
+		- DATA_out: Represents the output size in MB:                                       float
+		- OFF: 		A binary value representing whether the task can be offloaded:          boolean
+		- Storage:	Data in + Data out, represents the total storage needed for a task:     float
+    * Task Edges -  Edge Weight Latency
+
+Computation Nodes:
+    * Three types of computation nodes:
+        - Edge
+        - Cloud
+        - Mobile
+
+    * Base Computation Node class:
+        - CORES     - Number of cores on computation device:                                                int
+        - MIPS      - Millions of instructions per second the cores on the device can process per second:   Unsigned long long int
+        - RAM       - Amount of RAM on device in gigabytes:                                                 float
+        - STORAGE   - The amount of storage available in gigabytes:                                         float
+        - type      - Describes what type of node the device is:                                            enum {md, edge, cloud}
+
+    * Edge Computation Node class (extends Base Computation Node):
+        - Coords    - GPS Coordinates of the Edge device:                                                   array double[2] {latitude, longditude}
+
+    * Mobile Edge Node Class (extends Edge Computation Node):
+        - Battery   - Described as the percentage on device (0 - 100%):                                     int
+
+    * The types of computation nodes map to the following classes:
+        - Cloud:    Base Computation Node
+        - Edge:     Edge Computation Node
+        - Mobile:   Mobile Edge Node
+
+Network topology:
+    * Modeled as Graph
+         - Modeled as an undirected graph.
+    * Nodes have set of attributes
+    * Nodes of type <Base Computation Node>
+
+Decision Engine:
+    - Needs to know what tasks are currently being processed
+    - Needs to know the remaining capacity avaibility of the network
+    - Assume that it knows the full info on the network
+    - Always up to date
+    - Knows how many time slots a task will be running on a particular node
+
+Assumptions:
+    * Dont impose a maximum latency constraint on tasks.
+    * Drop all mention of latency from the problem (focus on the maximum).
+        - Instead we can focus on the data rate (ie. bandwidth of the links and the data transfer size of a task)
+    * A mobile device can generate another application while it's previous application is running.
+
+Steps to begin:
+    * Network initialisation
+        - Start by generating network infrastructure as a graph,
+        - Generate an initial network topology (design it manually)
+        - Eventually create a very basic generator.
+    * Decide what applications to use
+        - Will most likely use navigator application from the paper.
+    * Explore whether it is possible to design without being a simulation
+    * Mobile devices will generate applications at different points in time.
+        - Use an exponential distribution to generate events (ie. applications composed of tasks).
+
+How to manage the temporal the component:
+    - How long does it take to run an application.
+    - Model the application time as a decision variable
+    - If I run the task myself, it will take this time
+    - If you run it, it will take n time + x time to reach you
+    - If you have one variable of what is the starting time of each task
+    - Think of the problem, every node only have one core
+    - Instead of parralelisation, split cores up into multiple linked nodes with 0 latency and infinite bandwidth.
+    - Model the number of cores as a bin container
+    - If a task takes a number of cores, and we model the number of cores as a container.
+    - MIPS only a factor in how long it will take.
+    - How are we going to define a timeslot.
+        - Discretise time as an integer at the beginning (1ms?).
+    - Add the transfer time to the time for a node to be unavailable.
+    - You can do two things:
+        - Discretise time on a slot by slot basis
+        - Go for an event based simulator
+            - Keep a sorted time axis
+        - How to keep track of multiple time variables. 
+        - Take a look at a heap.
+            - Look at a heap in CPP
+        - Keep track of absolute time
+        - Calculate the absolute time of completion
+    - Maintain a queue of 4 event lists
+    - Try and simplify down to 1 if possible.
+        
+
