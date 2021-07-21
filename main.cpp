@@ -8,12 +8,12 @@
 #include <Models/ComputationNode/ComputationNode.h>
 #include <Models/EdgeNode/EdgeNode.h>
 #include <Models/MobileNode/MobileNode.h>
-#include <Models/VertexData.h>
+#include <Models/NetworkVertexData.h>
 
 using namespace std;
 
 typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, VertexData, EdgeWeightProperty> NetworkTopology;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::bidirectionalS, NetworkVertexData, EdgeWeightProperty> NetworkTopology;
 typedef boost::graph_traits<NetworkTopology>::edge_iterator edge_iterator;
 typedef boost::graph_traits<NetworkTopology>::vertex_iterator vertex_iterator;
 
@@ -51,9 +51,9 @@ int main() {
     cout << "Vertex list:\n";
 
     for (auto iter = vi.first; iter != vi.second; iter++) {
-        node_type type = get(&VertexData::type, g)[(int) *iter];
+        node_type type = get(&NetworkVertexData::type, g)[(int) *iter];
         if (type == mobile)
-            cout << "vertex " << get(&VertexData::mobileNode, g)[(int) *iter].get().getBattery() << endl;
+            cout << "vertex " << get(&NetworkVertexData::mobileNode, g)[(int) *iter].get().getBattery() << endl;
     }
 
     return 0;
