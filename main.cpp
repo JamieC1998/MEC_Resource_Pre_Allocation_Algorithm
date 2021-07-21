@@ -13,28 +13,28 @@
 using namespace std;
 
 int main() {
-    NetworkTopology g = main::generateNetwork();
+    NetworkTopology network = main::generateNetwork();
 
-    pair<edge_iterator, edge_iterator> ei = edges(g);
+    pair<edge_iterator, edge_iterator> ei = edges(network);
 
-    pair<vertex_iterator, vertex_iterator> vi = vertices(g);
+    pair<vertex_iterator, vertex_iterator> vi = vertices(network);
 
 
-    cout << "Number of edges = " << num_edges(g) << "\n";
+    cout << "Number of edges = " << num_edges(network) << "\n";
     cout << "Edge list:\n";
 
-    boost::property_map<NetworkTopology, boost::edge_weight_t>::type weightMap = get(boost::edge_weight, g);
+    boost::property_map<NetworkTopology, boost::edge_weight_t>::type weightMap = get(boost::edge_weight, network);
     for (auto iter = ei.first; iter != ei.second; iter++) {
         cout << "edge " << *iter << " weight " << get(weightMap, *iter) << endl;
     }
 
-    cout << endl << "Number of vertices = " << num_vertices(g) << "\n";
+    cout << endl << "Number of vertices = " << num_vertices(network) << "\n";
     cout << "Vertex list:\n";
 
     for (auto iter = vi.first; iter != vi.second; iter++) {
-        node_type type = get(&NetworkVertexData::type, g)[(int) *iter];
+        node_type type = get(&NetworkVertexData::type, network)[(int) *iter];
         if (type == mobile)
-            cout << "vertex " << get(&NetworkVertexData::mobileNode, g)[(int) *iter].get().getBattery() << endl;
+            cout << "vertex " << get(&NetworkVertexData::mobileNode, network)[(int) *iter].get().getBattery() << endl;
     }
 
     return 0;
