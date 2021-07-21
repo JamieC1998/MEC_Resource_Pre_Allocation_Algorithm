@@ -6,7 +6,16 @@
 #define FIRSTHOPMOBILEOFFLOADING_TASK_H
 
 
+#include <iostream>
+
 class Task {
+private:
+    std::string name;
+public:
+    const std::string &getName() const;
+
+    void setName(const std::string &name);
+
 private:
     unsigned long long int millions_of_instructions;
     float ram;
@@ -35,6 +44,10 @@ public:
     void setDataOut(unsigned int dataOut);
 
     unsigned int getStorage() const;
+
+    friend std::ostream& operator << (std::ostream &os, const Task &task);
+
+    std::string to_string();
 };
 
 

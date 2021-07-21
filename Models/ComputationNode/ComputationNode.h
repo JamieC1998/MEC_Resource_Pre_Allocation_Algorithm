@@ -6,6 +6,7 @@
 #define FIRSTHOPMOBILEOFFLOADING_COMPUTATIONNODE_H
 
 #include <enums/NodeTypes.h>
+#include <iostream>
 
 class ComputationNode {
 private:
@@ -14,14 +15,15 @@ private:
     float ram;
     float storage;
     node_type type;
+    bool is_free = true;
 
 public:
     ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
                     node_type type);
 
-    void setIsFree(bool isFree);
+    friend std::ostream& operator << (std::ostream &os, const ComputationNode &cN);
 
-    bool is_free = true;
+    std::string to_string();
 
     int getCores() const;
 
@@ -34,6 +36,8 @@ public:
     node_type getType() const;
 
     bool isFree() const;
+
+    void setIsFree(bool isFree);
 
 };
 

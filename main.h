@@ -16,6 +16,7 @@ typedef boost::graph_traits<NetworkTopology>::vertex_iterator vertex_iterator;
 class main {
 public:
     static NetworkTopology generateNetwork();
+    static void logInfo(NetworkTopology& network);
 };
 
 

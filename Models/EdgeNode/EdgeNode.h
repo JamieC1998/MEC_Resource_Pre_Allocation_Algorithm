@@ -18,6 +18,10 @@ public:
     EdgeNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage, node_type type,
              const std::pair<double, double> &coords);
 
+    friend std::ostream& operator << (std::ostream &os, const EdgeNode &eN);
+
+    std::string to_string();
+
     const std::pair<double, double> &getCoords() const;
 
     void setCoords(const std::pair<double, double> &coords);

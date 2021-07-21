@@ -16,6 +16,10 @@ public:
     MobileNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage, node_type type,
                const std::pair<double, double> &coords);
 
+    friend std::ostream& operator << (std::ostream &os, const MobileNode &mN);
+
+    std::string to_string();
+
     int getBattery() const;
 
     void setBattery(int battery);

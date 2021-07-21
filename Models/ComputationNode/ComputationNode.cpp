@@ -3,6 +3,13 @@
 //
 
 #include "ComputationNode.h"
+#include <iostream>
+#include <sstream>
+
+ComputationNode::ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram,
+                                 float storage, node_type type)
+        : cores(cores), millions_instructions_per_core(millionsInstructionsPerCore), ram(ram), storage(storage),
+          type(type) {}
 
 int ComputationNode::getCores() const {
     return cores;
@@ -24,15 +31,26 @@ node_type ComputationNode::getType() const {
     return type;
 }
 
-bool ComputationNode::isFree() const {
-    return is_free;
-}
-
 void ComputationNode::setIsFree(bool isFree) {
-    is_free = isFree;
+    is_free = free;
 }
 
-ComputationNode::ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram,
-                                 float storage, node_type type)
-        : cores(cores), millions_instructions_per_core(millionsInstructionsPerCore), ram(ram), storage(storage),
-          type(type) {};
+bool ComputationNode::isFree() const {
+    return false;
+}
+
+
+std::ostream &operator<<(std::ostream &os, const ComputationNode &cN) {
+    return (os << " Cores: " << cN.getCores() << "\n MIPS: " << cN.getMillionsInstructionsPerCore() << "\n Storage: "
+               << cN.getStorage() << "\n RAM: " << cN.getRam() << "\n Type: " << cN.getType() << "\n Free: "
+               << cN.isFree() << std::endl);
+}
+
+std::string ComputationNode::to_string() {
+    std::stringstream ss;
+    ss << (*this);
+    return ss.str();
+}
+
+
+

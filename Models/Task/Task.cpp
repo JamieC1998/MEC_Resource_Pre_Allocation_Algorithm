@@ -2,7 +2,12 @@
 // Created by Jamie Cotter on 21/07/2021.
 //
 
+#include <sstream>
 #include "Task.h"
+
+Task::Task(unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn, unsigned int dataOut)
+        : millions_of_instructions(millionsOfInstructions), ram(ram), data_in(dataIn),
+          data_out(dataOut), storage(dataIn + dataOut) {}
 
 unsigned long long int Task::getMillionsOfInstructions() const {
     return millions_of_instructions;
@@ -42,7 +47,23 @@ unsigned int Task::getStorage() const {
     return storage;
 }
 
-Task::Task(unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn, unsigned int dataOut)
-        : millions_of_instructions(millionsOfInstructions), ram(ram), data_in(dataIn),
-          data_out(dataOut), storage(dataIn + dataOut) {}
+const std::string &Task::getName() const {
+    return name;
+}
+
+void Task::setName(const std::string &name) {
+    Task::name = name;
+}
+
+std::ostream &operator<<(std::ostream &os, const Task &task) {
+    return (os << "Name: " << task.getName() << "\n RAM: " << task.getRam() << "\n MI: " << task.getMillionsOfInstructions() << "\n Data in: "
+               << task.getDataIn() << "\n Data out: " << task.getRam() << "\n Storage: " << task.getStorage()
+               << std::endl);
+}
+
+std::string Task::to_string() {
+    std::stringstream ss;
+    ss << (*this);
+    return ss.str();
+}
 
