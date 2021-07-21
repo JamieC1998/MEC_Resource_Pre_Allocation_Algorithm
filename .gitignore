@@ -34,4 +34,4 @@
 /cmake-build-debug
 
 *.xml
-./.idea
+./.idea/*
