@@ -10,10 +10,11 @@
 #include <utility>
 
 class EdgeNode : public ComputationNode {
-public:
+private:
     //0th index is longitude, 1st is latitude
-    std::pair<double, double> coords = std::make_pair (0,0);
+    std::pair<double, double> coords = std::make_pair(0, 0);
 
+public:
     EdgeNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage, node_type type,
              const std::pair<double, double> &coords);
 

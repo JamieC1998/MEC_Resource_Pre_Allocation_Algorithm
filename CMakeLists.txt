@@ -9,4 +9,4 @@ include_directories(. ${Boost_INCLUDE_DIRS})
 
 add_executable(FirstHopMobileOffloading
         main.cpp
-        main.h Models/ComputationNode/ComputationNode.cpp Models/ComputationNode/ComputationNode.h enums/NodeTypes.h Models/EdgeNode/EdgeNode.cpp Models/EdgeNode/EdgeNode.h Models/MobileNode/MobileNode.cpp Models/MobileNode/MobileNode.h)
+        main.h Models/ComputationNode/ComputationNode.cpp Models/ComputationNode/ComputationNode.h enums/NodeTypes.h Models/EdgeNode/EdgeNode.cpp Models/EdgeNode/EdgeNode.h Models/MobileNode/MobileNode.cpp Models/MobileNode/MobileNode.h Models/VertexData.h)

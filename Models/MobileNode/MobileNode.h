@@ -9,9 +9,10 @@
 #include <Models/EdgeNode/EdgeNode.h>
 
 class MobileNode : public EdgeNode {
-public:
+private:
     int battery = 100;
 
+public:
     MobileNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage, node_type type,
                const std::pair<double, double> &coords);
 

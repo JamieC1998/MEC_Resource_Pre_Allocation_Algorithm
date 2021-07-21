@@ -8,13 +8,14 @@
 #include <enums/NodeTypes.h>
 
 class ComputationNode {
-public:
+private:
     int cores;
     unsigned long long int millions_instructions_per_core;
     float ram;
     float storage;
     node_type type;
 
+public:
     ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
                     node_type type);
 
