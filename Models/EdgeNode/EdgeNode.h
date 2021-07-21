@@ -7,24 +7,27 @@
 
 
 #include <Models/ComputationNode/ComputationNode.h>
+#include <utility>
 
 class EdgeNode : public ComputationNode {
 public:
-    double coord_longitude;
-    double coord_latitude;
+    //0th index is longitude, 1st is latitude
+    std::pair<double, double> coords = std::make_pair (0,0);
 
     EdgeNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage, node_type type,
-             double coordLongitude, double coordLatitude);
+             const std::pair<double, double> &coords);
 
-    double getCoordX() const;
+    const std::pair<double, double> &getCoords() const;
 
-    void setCoordX(double coordX);
+    void setCoords(const std::pair<double, double> &coords);
 
-    double getCoordY() const;
+    void setLongitude(double longitude);
 
-    void setCoordY(double coordY);
+    void setLatitude(double latitude);
 
-    void setCoords(double x, double y);
+    double getLongitude();
+
+    double getLatitude();
 };
 
 

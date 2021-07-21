@@ -13,11 +13,9 @@ void MobileNode::setBattery(int battery) {
 }
 
 MobileNode::MobileNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
-                       node_type type, double coordLongitude, double coordLatitude)
+                       node_type type, const std::pair<double, double> &coords)
         : EdgeNode(cores,
                    millionsInstructionsPerCore,
-                   ram,
-                   storage,
-                   type,
-                   coordLongitude,
-                   coordLatitude) {}
+                   ram, storage,
+                   type, coords) {}
+

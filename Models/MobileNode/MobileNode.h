@@ -8,12 +8,12 @@
 
 #include <Models/EdgeNode/EdgeNode.h>
 
-class MobileNode: public EdgeNode {
+class MobileNode : public EdgeNode {
 public:
     int battery = 100;
 
     MobileNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage, node_type type,
-               double coordLongitude, double coordLatitude);
+               const std::pair<double, double> &coords);
 
     int getBattery() const;
 
