@@ -22,6 +22,7 @@ public:
     static NetworkTopology generateNetwork();
     static void logInfo(NetworkTopology& network);
     static std::vector<int> shortestRouteBetweenTwoPoints(int start, int goal, NetworkTopology& network);
+    static std::vector<network_vertex_descriptor> shortestPaths(int start, NetworkTopology& network);
 };
 
 

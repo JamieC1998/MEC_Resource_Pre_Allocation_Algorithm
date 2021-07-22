@@ -28,7 +28,7 @@ int main() {
     return 0;
 }
 
-std::vector<int> main::shortestRouteBetweenTwoPoints(int start, int goal, NetworkTopology& network){
+std::vector<network_vertex_descriptor> main::shortestPaths(int start, NetworkTopology& network){
     vector<network_vertex_descriptor> pred(num_vertices(network));
     iterator_property_map<vector<network_vertex_descriptor>::iterator,
             IdMap,
@@ -44,6 +44,12 @@ std::vector<int> main::shortestRouteBetweenTwoPoints(int start, int goal, Networ
             distmap_vect(dist_vector.begin(), get(boost::vertex_index, network));
 
     dijkstra_shortest_paths(network, 0, predecessor_map(pred_map).distance_map(distmap_vect));
+
+    return pred;
+}
+
+std::vector<int> main::shortestRouteBetweenTwoPoints(int start, int goal, NetworkTopology& network){
+    vector<network_vertex_descriptor> pred = shortestPaths(start, network);
 
     int current = goal;
     vector<int> route;
