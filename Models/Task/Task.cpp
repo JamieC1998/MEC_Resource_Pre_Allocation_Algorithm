@@ -50,7 +50,7 @@ void Task::setName(const std::string &name) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Task &task) {
-    return (os << "Name: " << task.getName() << "\n RAM: " << task.getRam() << "\n MI: " << task.getMillionsOfInstructions() << "\n Data in: "
+    return (os << " Name: " << task.getName() << "\n RAM: " << task.getRam() << "\n MI: " << task.getMillionsOfInstructions() << "\n Data in: "
                << task.getDataIn() << "\n Data out: " << task.getRam() << "\n Storage: " << task.getStorage()
                << std::endl);
 }

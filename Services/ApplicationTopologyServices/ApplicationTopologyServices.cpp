@@ -46,6 +46,20 @@ ApplicationTopology ApplicationTopologyServices::generateNavigator() {
     return a;
 }
 
+vector<detail::adj_list_gen<adjacency_list<vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
+ApplicationTopologyServices::getVertices(ApplicationTopology &application){
+    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> res;
+
+    pair<application_vertex_iterator, application_vertex_iterator> vi = vertices(application);
+
+    for (auto iter = vi.first; iter != vi.second; iter++) {
+        res.push_back(application.m_vertices[*iter]);
+    }
+
+    return res;
+}
+
+
 void ApplicationTopologyServices::logInfo(ApplicationTopology &application) {
     pair<application_edge_iterator, application_edge_iterator> ei = edges(application);
 
@@ -63,8 +77,11 @@ void ApplicationTopologyServices::logInfo(ApplicationTopology &application) {
     cout << "Vertex list:\n" << endl;
 
     for (auto iter = vi.first; iter != vi.second; iter++) {
+            Task task =  get(&TaskVertexData::task, application)[*iter].get();
 
-            cout << "Vertex " << *iter << ":\n" << get(&TaskVertexData::task, application)[*iter].get().to_string()
+            cout << "Vertex " << *iter << ":\n" << task.to_string()
+                 << " Out Edge count: " << application.m_vertices[*iter].m_out_edges.size() << endl
                  << endl;
     }
+
 }
