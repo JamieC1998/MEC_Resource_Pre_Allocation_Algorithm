@@ -11,12 +11,7 @@
 class Task {
 private:
     std::string name;
-public:
-    const std::string &getName() const;
 
-    void setName(const std::string &name);
-
-private:
     unsigned long long int millions_of_instructions;
     float ram;
     unsigned int data_in;
@@ -24,8 +19,12 @@ private:
     unsigned int storage;
 
 public:
+    Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
+         unsigned int dataOut, unsigned int storage);
 
-    Task(unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn, unsigned int dataOut);
+    const std::string &getName() const;
+
+    void setName(const std::string &name);
 
     unsigned long long int getMillionsOfInstructions() const;
 
@@ -44,6 +43,8 @@ public:
     void setDataOut(unsigned int dataOut);
 
     unsigned int getStorage() const;
+
+    void setStorage(unsigned int storage);
 
     friend std::ostream& operator << (std::ostream &os, const Task &task);
 

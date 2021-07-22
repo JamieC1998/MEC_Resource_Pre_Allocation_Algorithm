@@ -5,10 +5,6 @@
 #include <sstream>
 #include "Task.h"
 
-Task::Task(unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn, unsigned int dataOut)
-        : millions_of_instructions(millionsOfInstructions), ram(ram), data_in(dataIn),
-          data_out(dataOut), storage(dataIn + dataOut) {}
-
 unsigned long long int Task::getMillionsOfInstructions() const {
     return millions_of_instructions;
 }
@@ -31,7 +27,6 @@ unsigned int Task::getDataIn() const {
 
 void Task::setDataIn(unsigned int dataIn) {
     data_in = dataIn;
-    storage = data_in + data_out;
 }
 
 unsigned int Task::getDataOut() const {
@@ -40,7 +35,6 @@ unsigned int Task::getDataOut() const {
 
 void Task::setDataOut(unsigned int dataOut) {
     data_out = dataOut;
-    storage = data_in + data_out;
 }
 
 unsigned int Task::getStorage() const {
@@ -66,4 +60,13 @@ std::string Task::to_string() {
     ss << (*this);
     return ss.str();
 }
+
+void Task::setStorage(unsigned int storage) {
+    Task::storage = storage;
+}
+
+Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
+           unsigned int dataOut, unsigned int storage) : name(name), millions_of_instructions(millionsOfInstructions),
+                                                         ram(ram), data_in(dataIn), data_out(dataOut),
+                                                         storage(storage) {}
 

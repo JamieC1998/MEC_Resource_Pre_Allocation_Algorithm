@@ -39,12 +39,12 @@ double EdgeNode::getLatitude() {
 
 std::ostream &operator<<(std::ostream &os, const EdgeNode &eN) {
     return (os << " Cores: " << eN.getCores() << "\n MIPS: " << eN.getMillionsInstructionsPerCore() << "\n Storage: "
-               << eN.getStorage() << "\n RAM: " << eN.getRam() << "\n Type: " << eN.getType() << "\n Free: "
+               << eN.getStorage() << "\n RAM: " << eN.getRam() << "\n Type: " << eN.printType() << "\n Free: "
                << eN.isFree() << "\n Coords: ( "
                << eN.getCoords().first << ", " << eN.getCoords().second << ")" << std::endl);
 }
 
-std::string EdgeNode::to_string() {
+std::string EdgeNode::to_string() const{
     std::stringstream ss;
     ss << (*this);
     return ss.str();

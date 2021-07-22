@@ -20,7 +20,7 @@ public:
 
     friend std::ostream& operator << (std::ostream &os, const EdgeNode &eN);
 
-    std::string to_string();
+    std::string to_string() const;
 
     const std::pair<double, double> &getCoords() const;
 

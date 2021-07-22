@@ -22,13 +22,13 @@ void MobileNode::setBattery(int battery) {
 
 std::ostream &operator<<(std::ostream &os, const MobileNode &mN) {
     return (os << " Cores: " << mN.getCores() << "\n MIPS: " << mN.getMillionsInstructionsPerCore() << "\n Storage: "
-               << mN.getStorage() << "\n RAM: " << mN.getRam() << "\n Type: " << mN.getType() << "\n Free: "
+               << mN.getStorage() << "\n RAM: " << mN.getRam() << "\n Type: " << mN.printType() << "\n Free: "
                << mN.isFree() << "\n Coords: ( "
                << mN.getCoords().first << ", " << mN.getCoords().second << ")" << "\n Battery: " << mN.getBattery()
                << std::endl);
 }
 
-std::string MobileNode::to_string() {
+std::string MobileNode::to_string() const{
     std::stringstream ss;
     ss << (*this);
     return ss.str();

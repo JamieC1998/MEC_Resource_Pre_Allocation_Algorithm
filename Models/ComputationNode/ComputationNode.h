@@ -39,6 +39,7 @@ public:
 
     void setIsFree(bool isFree);
 
+    std::string printType() const;
 };
 
 

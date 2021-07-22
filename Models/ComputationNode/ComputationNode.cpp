@@ -42,7 +42,7 @@ bool ComputationNode::isFree() const {
 
 std::ostream &operator<<(std::ostream &os, const ComputationNode &cN) {
     return (os << " Cores: " << cN.getCores() << "\n MIPS: " << cN.getMillionsInstructionsPerCore() << "\n Storage: "
-               << cN.getStorage() << "\n RAM: " << cN.getRam() << "\n Type: " << cN.getType() << "\n Free: "
+               << cN.getStorage() << "\n RAM: " << cN.getRam() << "\n Type: " << cN.printType() << "\n Free: "
                << cN.isFree() << std::endl);
 }
 
@@ -50,6 +50,16 @@ std::string ComputationNode::to_string() {
     std::stringstream ss;
     ss << (*this);
     return ss.str();
+}
+
+std::string ComputationNode::printType() const {
+    if(type == cloud)
+        return "cloud";
+    else if(type == edge)
+        return "edge";
+    else if(type == mobile)
+        return "mobile";
+    return "empty";
 }
 
 

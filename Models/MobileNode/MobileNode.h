@@ -18,7 +18,7 @@ public:
 
     friend std::ostream& operator << (std::ostream &os, const MobileNode &mN);
 
-    std::string to_string();
+    std::string to_string() const;
 
     int getBattery() const;
 
