@@ -70,3 +70,10 @@ Task::Task(const std::string &name, unsigned long long int millionsOfInstruction
                                                          ram(ram), data_in(dataIn), data_out(dataOut),
                                                          storage(storage) {}
 
+bool Task::isDone() const {
+    return done;
+}
+
+void Task::setDone(bool done) {
+    Task::done = done;
+}

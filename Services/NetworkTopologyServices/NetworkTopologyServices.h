@@ -19,9 +19,17 @@ typedef property_map<NetworkTopology, vertex_index_t>::type IdMap;
 class NetworkTopologyServices {
 public:
     static NetworkTopology generateNetwork();
-    static void logInfo(NetworkTopology& network);
-    static std::vector<int> shortestRouteBetweenTwoPoints(int start, int goal, std::vector<network_vertex_descriptor> pred);
+
+    static void logInfo(NetworkTopology &network);
+
+    static std::vector<int>
+    shortestRouteBetweenTwoPoints(int start, int goal, std::vector<network_vertex_descriptor> pred);
+
     static std::pair<std::vector<unsigned long>, iterator_property_map<std::__wrap_iter<int *>, vec_adj_list_vertex_id_map<NetworkVertexData, unsigned long>, int, int &>>
-    shortestPaths(int start, NetworkTopology& network);
+    shortestPaths(int start, NetworkTopology &network);
+
+    static std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
+    getVertices(NetworkTopology &network);
 };
+
 #endif //FIRSTHOPMOBILEOFFLOADING_NETWORKTOPOLOGYSERVICES_H

@@ -139,3 +139,16 @@ NetworkTopology NetworkTopologyServices::generateNetwork() {
 
     return g;
 }
+
+vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
+NetworkTopologyServices::getVertices(NetworkTopology &network) {
+    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> res;
+
+    pair<network_vertex_iterator, network_vertex_iterator> vi = vertices(network);
+
+    for (auto iter = vi.first; iter != vi.second; iter++) {
+        res.push_back(network.m_vertices[*iter]);
+    }
+
+    return res;
+}

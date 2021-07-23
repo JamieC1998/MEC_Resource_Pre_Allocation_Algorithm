@@ -10,9 +10,7 @@
 
 struct TaskVertexData {
     boost::optional<Task> task;
-    bool done = false;
-    int absoluteStart = 0;
-    int absoluteFinish = 0;
+
 };
 
 #endif //FIRSTHOPMOBILEOFFLOADING_TASKVERTEXDATA_H

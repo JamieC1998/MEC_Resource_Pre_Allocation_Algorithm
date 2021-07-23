@@ -18,7 +18,13 @@ private:
     unsigned int data_out;
     unsigned int storage;
 
+    bool done = false;
+
 public:
+    bool isDone() const;
+
+    void setDone(bool done);
+
     Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
          unsigned int dataOut, unsigned int storage);
 

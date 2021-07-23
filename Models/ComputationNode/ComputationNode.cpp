@@ -36,7 +36,7 @@ void ComputationNode::setIsFree(bool isFree) {
 }
 
 bool ComputationNode::isFree() const {
-    return false;
+    return is_free;
 }
 
 

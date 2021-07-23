@@ -41,14 +41,14 @@ ApplicationTopology ApplicationTopologyServices::generateNavigator() {
     auto e7 = add_edge(v6, v5, 1, a);
     auto e8 = add_edge(v5, v7, 1, a);
     auto e9 = add_edge(v5, v8, 1, a);
-    auto e10= add_edge(v5, v9, 1, a);
+    auto e10 = add_edge(v5, v9, 1, a);
 
     return a;
 }
 
-vector<detail::adj_list_gen<adjacency_list<vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
-ApplicationTopologyServices::getVertices(ApplicationTopology &application){
-    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, directedS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> res;
+vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
+ApplicationTopologyServices::getVertices(ApplicationTopology &application) {
+    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> res;
 
     pair<application_vertex_iterator, application_vertex_iterator> vi = vertices(application);
 
@@ -68,7 +68,7 @@ void ApplicationTopologyServices::logInfo(ApplicationTopology &application) {
     cout << "Number of edges = " << num_edges(application) << "\n";
     cout << "Edge list:\n";
 
-    property_map<ApplicationTopology , edge_weight_t>::type weightMap = get(edge_weight, application);
+    property_map<ApplicationTopology, edge_weight_t>::type weightMap = get(edge_weight, application);
     for (auto iter = ei.first; iter != ei.second; iter++) {
         cout << "edge " << *iter << " weight " << get(weightMap, *iter) << endl;
     }
@@ -77,11 +77,9 @@ void ApplicationTopologyServices::logInfo(ApplicationTopology &application) {
     cout << "Vertex list:\n" << endl;
 
     for (auto iter = vi.first; iter != vi.second; iter++) {
-            Task task =  get(&TaskVertexData::task, application)[*iter].get();
-
-            cout << "Vertex " << *iter << ":\n" << task.to_string()
-                 << " Out Edge count: " << application.m_vertices[*iter].m_out_edges.size() << endl
-                 << endl;
+        cout << "Vertex " << *iter << ":\n" << get(&TaskVertexData::task, application)[*iter]->to_string()
+             << " Out Edge count: " << application.m_vertices[*iter].m_out_edges.size() << endl
+             << endl;
     }
 
 }
