@@ -77,3 +77,11 @@ bool Task::isDone() const {
 void Task::setDone(bool done) {
     Task::done = done;
 }
+
+bool Task::isInProgress() const {
+    return in_progress;
+}
+
+void Task::setInProgress(bool inProgress) {
+    in_progress = inProgress;
+}

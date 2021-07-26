@@ -9,7 +9,7 @@
 ComputationNode::ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram,
                                  float storage, node_type type)
         : cores(cores), millions_instructions_per_core(millionsInstructionsPerCore), ram(ram), storage(storage),
-          type(type) {}
+          type(type), is_free(true){}
 
 int ComputationNode::getCores() const {
     return cores;
@@ -32,7 +32,7 @@ node_type ComputationNode::getType() const {
 }
 
 void ComputationNode::setIsFree(bool isFree) {
-    is_free = free;
+    is_free = isFree;
 }
 
 bool ComputationNode::isFree() const {

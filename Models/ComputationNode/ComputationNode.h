@@ -15,7 +15,7 @@ private:
     float ram;
     float storage;
     node_type type;
-    bool is_free = true;
+    bool is_free;
 
 public:
     ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,

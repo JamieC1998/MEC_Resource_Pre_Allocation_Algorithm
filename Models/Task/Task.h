@@ -19,6 +19,11 @@ private:
     unsigned int storage;
 
     bool done = false;
+    bool in_progress = false;
+public:
+    bool isInProgress() const;
+
+    void setInProgress(bool inProgress);
 
 public:
     bool isDone() const;

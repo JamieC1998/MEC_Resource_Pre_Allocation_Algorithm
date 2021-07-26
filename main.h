@@ -9,8 +9,8 @@
 #include <Services/ApplicationTopologyServices/ApplicationTopologyServices.h>
 
 struct TaskMapping {
-    int absoluteStart = 0;
-    int absoluteFinish = 0;
+    float absoluteStart = 0;
+    float absoluteFinish = 0;
     std::reference_wrapper<TaskVertexData> task;
     std::reference_wrapper<NetworkVertexData> node;
 };
@@ -27,6 +27,11 @@ public:
     getReadyNodes(
             std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList);
 
+    static float calculateProcessingTime(TaskVertexData task, NetworkVertexData node);
+
+    static std::vector<TaskMapping> sortEventList(std::vector<TaskMapping> eventList);
+
+    static void logResults(std::vector<TaskMapping> finished);
 };
 
 
