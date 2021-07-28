@@ -10,6 +10,10 @@
 
 class ComputationNode {
 private:
+    static int id_counter;
+    int id;
+
+private:
     int cores;
     unsigned long long int millions_instructions_per_core;
     float ram;
@@ -20,6 +24,7 @@ private:
 public:
     ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
                     node_type type);
+    int getId() const;
 
     friend std::ostream& operator << (std::ostream &os, const ComputationNode &cN);
 

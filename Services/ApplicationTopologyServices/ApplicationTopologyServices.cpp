@@ -5,20 +5,19 @@
 #include "ApplicationTopologyServices.h"
 #include <boost/graph/adjacency_list.hpp>
 #include <Models/Task/Task.h>
-#include <enums/NodeTypes.h>
 
 using namespace std;
 
-ApplicationTopology ApplicationTopologyServices::generateNavigator() {
-    Task rootTask("CONF_PANEL", 1, 1, 5, 5, 1);
-    Task gpsTask("GPS", 1, 3, 5, 5, 5);
-    Task controlTask("CONTROL", 2, 3, 5, 5, 1);
-    Task mapsTask("MAPS", 3, 5, 50, 50, 5);
-    Task pathCalcTask("PATH_CALC", 5, 2, 50, 50, 5);
-    Task trafficTask("TRAFFIC", 5, 1, 50, 50, 5);
-    Task voiceSynthTask("VOICE_SYNTH", 2, 1, 5, 20, 5);
-    Task guiTask("GUI", 2, 1, 5, 20, 5);
-    Task speedTrapTask("SPEED_TRAP", 2, 1, 10, 10, 5);
+ApplicationTopology ApplicationTopologyServices::generateNavigator(int source_mobile_id) {
+    Task rootTask("CONF_PANEL", 1, 1, 5, 5, 1, source_mobile_id, false);
+    Task gpsTask("GPS", 1, 3, 5, 5, 5, source_mobile_id, true);
+    Task controlTask("CONTROL", 2, 3, 5, 5, 1, source_mobile_id, true);
+    Task mapsTask("MAPS", 3, 5, 50, 50, 5, source_mobile_id, true);
+    Task pathCalcTask("PATH_CALC", 5, 2, 50, 50, 5, source_mobile_id, true);
+    Task trafficTask("TRAFFIC", 5, 1, 50, 50, 5, source_mobile_id, true);
+    Task voiceSynthTask("VOICE_SYNTH", 2, 1, 5, 20, 5, source_mobile_id, true);
+    Task guiTask("GUI", 2, 1, 5, 20, 5, source_mobile_id, true);
+    Task speedTrapTask("SPEED_TRAP", 2, 1, 10, 10, 5, source_mobile_id, true);
 
     ApplicationTopology a;
 

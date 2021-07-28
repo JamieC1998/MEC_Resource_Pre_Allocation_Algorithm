@@ -25,6 +25,7 @@ std::ostream &operator<<(std::ostream &os, const MobileNode &mN) {
                << mN.getStorage() << "\n RAM: " << mN.getRam() << "\n Type: " << mN.printType() << "\n Free: "
                << mN.isFree() << "\n Coords: ( "
                << mN.getCoords().first << ", " << mN.getCoords().second << ")" << "\n Battery: " << mN.getBattery()
+               << "\n ID: " << mN.getId()
                << std::endl);
 }
 

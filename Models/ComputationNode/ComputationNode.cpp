@@ -6,10 +6,14 @@
 #include <iostream>
 #include <sstream>
 
+int ComputationNode::id_counter = 0;
+
 ComputationNode::ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram,
                                  float storage, node_type type)
         : cores(cores), millions_instructions_per_core(millionsInstructionsPerCore), ram(ram), storage(storage),
-          type(type), is_free(true){}
+          type(type), is_free(true), id(id_counter) {
+    id_counter++;
+}
 
 int ComputationNode::getCores() const {
     return cores;
@@ -39,11 +43,10 @@ bool ComputationNode::isFree() const {
     return is_free;
 }
 
-
 std::ostream &operator<<(std::ostream &os, const ComputationNode &cN) {
     return (os << " Cores: " << cN.getCores() << "\n MIPS: " << cN.getMillionsInstructionsPerCore() << "\n Storage: "
                << cN.getStorage() << "\n RAM: " << cN.getRam() << "\n Type: " << cN.printType() << "\n Free: "
-               << cN.isFree() << std::endl);
+               << cN.isFree() << "\n ID: " << cN.getId() << std::endl);
 }
 
 std::string ComputationNode::to_string() {
@@ -53,13 +56,17 @@ std::string ComputationNode::to_string() {
 }
 
 std::string ComputationNode::printType() const {
-    if(type == cloud)
+    if (type == cloud)
         return "cloud";
-    else if(type == edge)
+    else if (type == edge)
         return "edge";
-    else if(type == mobile)
+    else if (type == mobile)
         return "mobile";
     return "empty";
+}
+
+int ComputationNode::getId() const {
+    return id;
 }
 
 

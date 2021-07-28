@@ -9,6 +9,7 @@
 #include <Models/ComputationNode/ComputationNode.h>
 #include <Models/EdgeNode/EdgeNode.h>
 #include <Models/MobileNode/MobileNode.h>
+#include <boost/optional.hpp>
 
 struct NetworkVertexData {
     node_type type;

@@ -5,6 +5,17 @@
 #include <sstream>
 #include "Task.h"
 
+Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
+           unsigned int dataOut, unsigned int storage, int sourceMobileId, bool canOffload) : name(name),
+                                                                                              millions_of_instructions(
+                                                                                                      millionsOfInstructions),
+                                                                                              ram(ram), data_in(dataIn),
+                                                                                              data_out(dataOut),
+                                                                                              storage(storage),
+                                                                                              source_mobile_id(
+                                                                                                      sourceMobileId),
+                                                                                              offload(canOffload) {}
+
 unsigned long long int Task::getMillionsOfInstructions() const {
     return millions_of_instructions;
 }
@@ -37,7 +48,7 @@ void Task::setDataOut(unsigned int dataOut) {
     data_out = dataOut;
 }
 
-unsigned int Task::getStorage() const {
+float Task::getStorage() const {
     return storage;
 }
 
@@ -50,8 +61,10 @@ void Task::setName(const std::string &name) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Task &task) {
-    return (os << " Name: " << task.getName() << "\n RAM: " << task.getRam() << "\n MI: " << task.getMillionsOfInstructions() << "\n Data in: "
+    return (os << " Name: " << task.getName() << "\n RAM: " << task.getRam() << "\n MI: "
+               << task.getMillionsOfInstructions() << "\n Data in: "
                << task.getDataIn() << "\n Data out: " << task.getRam() << "\n Storage: " << task.getStorage()
+               << "\n Source Mobile ID: " << task.getSourceMobileId() << "\n Can Offload: " << task.isOffload()
                << std::endl);
 }
 
@@ -61,14 +74,9 @@ std::string Task::to_string() {
     return ss.str();
 }
 
-void Task::setStorage(unsigned int storage) {
+void Task::setStorage(float storage) {
     Task::storage = storage;
 }
-
-Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-           unsigned int dataOut, unsigned int storage) : name(name), millions_of_instructions(millionsOfInstructions),
-                                                         ram(ram), data_in(dataIn), data_out(dataOut),
-                                                         storage(storage) {}
 
 bool Task::isDone() const {
     return done;
@@ -84,4 +92,12 @@ bool Task::isInProgress() const {
 
 void Task::setInProgress(bool inProgress) {
     in_progress = inProgress;
+}
+
+int Task::getSourceMobileId() const {
+    return source_mobile_id;
+}
+
+bool Task::isOffload() const {
+    return offload;
 }

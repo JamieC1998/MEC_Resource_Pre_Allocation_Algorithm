@@ -78,6 +78,7 @@ void NetworkTopologyServices::logInfo(NetworkTopology &network) {
         cout << "edge " << *iter << " weight " << INT_MAX - get(weightMap, *iter) << endl;
     }
 
+
     cout << endl << "Number of vertices = " << num_vertices(network) << "\n";
     cout << "Vertex list:\n" << endl;
 
@@ -105,6 +106,13 @@ void NetworkTopologyServices::logInfo(NetworkTopology &network) {
     for (std::vector<int>::iterator it = route.begin(); it != route.end(); ++it) {
         cout << " Vertex: " << *it << endl;
     }
+}
+
+float NetworkTopologyServices::getBandwidth(int source, int destination, NetworkTopology& network){
+    property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
+    auto res = boost::edge(source, destination, network).first;
+
+    return INT_MAX - get(weightMap, res);
 }
 
 NetworkTopology NetworkTopologyServices::generateNetwork() {
