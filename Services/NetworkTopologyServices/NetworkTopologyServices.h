@@ -30,6 +30,8 @@ public:
 
     static std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
     getVertices(NetworkTopology &network);
+
+    static float getBandwidth(int source, int destination, NetworkTopology &network);
 };
 
 #endif //FIRSTHOPMOBILEOFFLOADING_NETWORKTOPOLOGYSERVICES_H

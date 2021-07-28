@@ -12,26 +12,36 @@ class Task {
 private:
     std::string name;
 
+    int source_mobile_id;
+
     unsigned long long int millions_of_instructions;
     float ram;
+
     unsigned int data_in;
     unsigned int data_out;
-    unsigned int storage;
+    float storage;
 
     bool done = false;
     bool in_progress = false;
+
+    //True means it can be offloaded, false must be processed on source
+    bool offload;
+
 public:
+    Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
+         unsigned int dataOut, unsigned int storage, int source_mobile_id, bool can_offload);
+
+    bool isOffload() const;
+
+    int getSourceMobileId() const;
+
     bool isInProgress() const;
 
     void setInProgress(bool inProgress);
 
-public:
     bool isDone() const;
 
     void setDone(bool done);
-
-    Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-         unsigned int dataOut, unsigned int storage);
 
     const std::string &getName() const;
 
@@ -53,11 +63,11 @@ public:
 
     void setDataOut(unsigned int dataOut);
 
-    unsigned int getStorage() const;
+    float getStorage() const;
 
-    void setStorage(unsigned int storage);
+    void setStorage(float storage);
 
-    friend std::ostream& operator << (std::ostream &os, const Task &task);
+    friend std::ostream &operator<<(std::ostream &os, const Task &task);
 
     std::string to_string();
 };

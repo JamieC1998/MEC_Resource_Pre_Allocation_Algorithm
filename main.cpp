@@ -5,20 +5,31 @@
 #include "main.h"
 #include <Services/NetworkTopologyServices/NetworkTopologyServices.h>
 #include <Services/ApplicationTopologyServices/ApplicationTopologyServices.h>
-
+#include <Services/SimulatorTopologyServices/SimulatorFunctions.h>
 
 using namespace std;
 
 int main() {
     NetworkTopology network = NetworkTopologyServices::generateNetwork();
     NetworkTopologyServices::logInfo(network);
+    auto networkVertexList = NetworkTopologyServices::getVertices(network);
+
+    int source_mobile_id = 0;
+
+    for (auto &vertex: networkVertexList) {
+        if (vertex.m_property.type == mobile) {
+            source_mobile_id = vertex.m_property.mobileNode->getId();
+            break;
+        }
+    }
 
     cout << endl << "NAVIGATOR " << endl;
-    ApplicationTopology navigator = ApplicationTopologyServices::generateNavigator();
+    ApplicationTopology navigator = ApplicationTopologyServices::generateNavigator(source_mobile_id);
     ApplicationTopologyServices::logInfo(navigator);
 
-    main::programLoop(network, navigator);
+//    main::programLoop(network, navigator);
 
+    SimulatorFunctions::programLoop(network, navigator);
     return 0;
 }
 
@@ -26,7 +37,6 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
     //Retrieving the list of vertices and their edges(in & out) in both our generated application and our network
     auto navigatorVertexList = ApplicationTopologyServices::getVertices(navigator);
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
-
     //Will hold the tasks ready to be offloaded in each loop
     vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
             readyTaskList;
@@ -44,14 +54,12 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
     //Represents time in seconds
     float time = 0.0f;
 
-    int size;
-
-    while(finished.size() != navigatorVertexList.size()) {
+    while (finished.size() != navigatorVertexList.size()) {
         //Sorting the current event list from most recent to oldest time
-        inProgress = main::sortEventList(inProgress);
+        inProgress = SimulatorFunctions::sortEventList(inProgress);
 
         //Moving to the next event
-        if (inProgress.size() != 0) {
+        if (!inProgress.empty()) {
             TaskMapping tM = inProgress.back();
             inProgress.pop_back();
 
@@ -69,7 +77,7 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
             finished.push_back(tM);
         }
 
-        readyTaskList = main::getReadyTasks(navigatorVertexList);
+        readyTaskList = SimulatorFunctions::getReadyTasks(navigatorVertexList);
         readyNodeList = main::getReadyNodes(networkVertexList);
 
         int count = (readyTaskList.size() < readyNodeList.size()) ? readyTaskList.size() : readyNodeList.size();
@@ -97,37 +105,26 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
     }
 
     main::logResults(finished);
-
-    return;
 }
 
-void main::logResults(vector<TaskMapping> finished){
+void main::logResults(const vector<TaskMapping> &finished) {
     cout << endl << "LOGGING MAPPING RESULTS:" << endl;
-    for(auto taskMapping : finished){
+    for (auto taskMapping : finished) {
         cout << "====================" << endl;
         cout << "TASK: " << endl;
         cout << taskMapping.task.get().task->to_string() << endl;
         cout << "VERTEX:" << endl;
 
-        if(taskMapping.node.get().type == cloud)
+        if (taskMapping.node.get().type == cloud)
             cout << taskMapping.node.get().comp->to_string();
-        else if(taskMapping.node.get().type == node_type::edge)
+        else if (taskMapping.node.get().type == node_type::edge)
             cout << taskMapping.node.get().edgeNode->to_string();
-        else if(taskMapping.node.get().type == mobile)
+        else if (taskMapping.node.get().type == mobile)
             cout << taskMapping.node.get().mobileNode->to_string();
 
         cout << endl << "START TIME: " << taskMapping.absoluteStart << endl;
         cout << "FINISH TIME: " << taskMapping.absoluteFinish << endl;
     }
-}
-
-vector<TaskMapping> main::sortEventList(vector<TaskMapping> eventList) {
-    sort(std::begin(eventList), std::end(eventList),
-         [](TaskMapping taskMapA, TaskMapping taskMapB) {
-             return taskMapA.absoluteFinish > taskMapB.absoluteFinish;
-         });
-
-    return eventList;
 }
 
 /**
@@ -172,46 +169,13 @@ main::getReadyNodes(
     for (auto &vertex : networkList) {
         if (vertex.m_property.type == mobile) {
             if (vertex.m_property.mobileNode->isFree())
-                res.push_back(vertex);
+                res.emplace_back(vertex);
         } else if (vertex.m_property.type == cloud) {
             if (vertex.m_property.comp->isFree())
-                res.push_back(vertex);
+                res.emplace_back(vertex);
         } else if (vertex.m_property.type == node_type::edge) {
             if (vertex.m_property.edgeNode->isFree())
-                res.push_back(vertex);
-        }
-    }
-
-    return res;
-}
-
-/**
- * @param taskList - The list of tasks that represent all the vertices in an application
- * @return - A vector containing only the tasks ready to be offloaded
- */
-vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
-main::getReadyTasks(
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList) {
-
-    vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> res;
-    for (auto &vertex : taskList) {
-        Task& tempTask = vertex.m_property.task.get();
-        if (!vertex.m_property.task->isDone() && !vertex.m_property.task->isInProgress()) {
-            if (vertex.m_in_edges.size() == 0) {
-                res.push_back(vertex);
-                continue;
-            } else {
-                bool ready = true;
-                for (auto edge : vertex.m_in_edges) {
-                    Task& edgeTemp = taskList[edge.m_target].m_property.task.get();
-                    if (!taskList[edge.m_target].m_property.task->isDone() ||
-                        taskList[edge.m_target].m_property.task->isInProgress()) {
-                        ready = false;
-                    }
-                }
-                if (ready)
-                    res.push_back(vertex);
-            }
+                res.emplace_back(vertex);
         }
     }
 

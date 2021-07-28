@@ -20,12 +20,13 @@ typedef graph_traits<ApplicationTopology>::vertex_descriptor application_vertex_
 class ApplicationTopologyServices {
 
 public:
-    static ApplicationTopology generateNavigator();
 
     static void logInfo(ApplicationTopology &application);
 
     static std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
     getVertices(ApplicationTopology &application);
+
+    static ApplicationTopology generateNavigator(int source_mobile_id);
 };
 
 
