@@ -8,6 +8,29 @@
 
 using namespace std;
 
+ApplicationTopology ApplicationTopologyServices::generateApplications(
+        std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
+        int source_mobile_id) {
+
+    ApplicationTopology a;
+
+    for (int j = 0; j < item.second.size(); j++) {
+        auto &application = item.second[j];
+        vector<string> strL = application.first;
+        vector<string> edgeL = application.second;
+        Task generated_task(strL[0], stoi(strL[1]), stof(strL[2]), stoi(strL[3]), stoi(strL[4]),
+                            stoi(strL[5]), source_mobile_id, stoi(strL[6]), stoi(strL[7]));
+
+        auto vert = add_vertex({generated_task}, a);
+
+        for (auto &i : edgeL)
+            add_edge(stoi(i), j, 1, a);
+
+    }
+
+    return a;
+}
+
 ApplicationTopology ApplicationTopologyServices::generateNavigator(int source_mobile_id) {
     Task rootTask("CONF_PANEL", 1, 1, 5, 5, 1, source_mobile_id, false, 1);
     Task gpsTask("GPS", 1, 3, 5, 5, 5, source_mobile_id, true, 1);

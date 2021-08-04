@@ -18,7 +18,7 @@ typedef graph_traits<ApplicationTopology>::vertex_iterator application_vertex_it
 typedef graph_traits<ApplicationTopology>::vertex_descriptor application_vertex_descriptor;
 
 struct ApplicationEvent {
-    int ready_time = 0;
+    float ready_time = 0;
     ApplicationTopology application;
 };
 
@@ -34,6 +34,10 @@ public:
     static ApplicationTopology generateNavigator(int source_mobile_id);
 
     static ApplicationTopology generateChessApp(int source_mobile_id);
+
+    static ApplicationTopology generateApplications(
+            std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
+            int source_mobile_id);
 };
 
 

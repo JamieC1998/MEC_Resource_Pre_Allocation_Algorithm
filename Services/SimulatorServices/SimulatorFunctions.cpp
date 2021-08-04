@@ -139,12 +139,12 @@ float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, in
     return current_time + rt_local + ot_up + ot_down;
 }
 
-void SimulatorFunctions::programLoop(NetworkTopology &network, vector<ApplicationEvent *> incoming_applications,
+void SimulatorFunctions::programLoop(NetworkTopology &network, vector<ApplicationEvent> incoming_applications,
                                      float completion_time) {
     int total_task_count = 0;
 
     for (auto &incoming_application : incoming_applications)
-        total_task_count += ((int) incoming_application->application.m_vertices.size());
+        total_task_count += ((int) incoming_application.application.m_vertices.size());
 
     //Represents time in seconds
     float time = 0.0f;
@@ -172,40 +172,44 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
         //Moving to the next event
         SimulatorFunctions::UpdateEventList(inProgress, finished, time);
 
+        //Emptying the task list
+        readyTaskList.clear();
+
         //Iterating through each application queue
         for (auto &taskList: total_task_lists) {
-            readyTaskList = SimulatorFunctions::getReadyTasks(taskList);
+            auto tempRes = SimulatorFunctions::getReadyTasks(taskList);
+            readyTaskList.insert(std::end(readyTaskList), std::begin(tempRes), std::end(tempRes));
+        }
 
-            int task_count = ((int) readyTaskList.size());
+        int task_count = ((int) readyTaskList.size());
 
-            for (int i = 0; i < task_count; i++) {
-                auto &selectedTask = readyTaskList.back().get().m_property;
-                readyTaskList.pop_back();
+        for (int i = 0; i < task_count; i++) {
+            auto &selectedTask = readyTaskList.back().get().m_property;
+            readyTaskList.pop_back();
 
-                pair<int, float> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
-                                                                                   selectedTask.task.get(), time,
-                                                                                   network);
+            pair<int, float> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
+                                                                               selectedTask.task.get(), time,
+                                                                               network);
 
-                if (selectedNodeData.first == -1)
-                    continue;
+            if (selectedNodeData.first == -1)
+                continue;
 
-                auto &selectedNode = networkVertexList[selectedNodeData.first].m_property;
+            auto &selectedNode = networkVertexList[selectedNodeData.first].m_property;
 
-                selectedTask.task.get().setInProgress(true);
+            selectedTask.task.get().setInProgress(true);
 
-                //Upcasting our selected node to base class for convenience
-                ComputationNode &node = (selectedNode.type == mobile) ? selectedNode.mobileNode.get()
-                                                                      : (selectedNode.type ==
-                                                                         cloud)
-                                                                        ? selectedNode.comp.get()
-                                                                        : selectedNode.edgeNode.get();
+            //Upcasting our selected node to base class for convenience
+            ComputationNode &node = (selectedNode.type == mobile) ? selectedNode.mobileNode.get()
+                                                                  : (selectedNode.type ==
+                                                                     cloud)
+                                                                    ? selectedNode.comp.get()
+                                                                    : selectedNode.edgeNode.get();
 
-                //Adding the selected task to our selected node
-                (const_cast<vector<struct Task> &>(node.getTaskVector())).push_back(selectedTask.task.get());
+            //Adding the selected task to our selected node
+            (const_cast<vector<struct Task> &>(node.getTaskVector())).push_back(selectedTask.task.get());
 
-                //Adding our mapping to the event list
-                inProgress.push_back({time, selectedNodeData.second, selectedTask, selectedNode});
-            }
+            //Adding our mapping to the event list
+            inProgress.push_back({time, selectedNodeData.second, selectedTask, selectedNode});
         }
 
         SimulatorFunctions::checkIncomingApplications(&total_task_lists, &incoming_applications, time);
@@ -224,13 +228,13 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
  */
 void SimulatorFunctions::checkIncomingApplications(
         vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
-        vector<ApplicationEvent *> *applications,
+        vector<ApplicationEvent> *applications,
         float current_time) {
 
-    vector<ApplicationEvent *> &incoming_application = *applications;
+    vector<ApplicationEvent> &incoming_application = *applications;
     for (int i = 0; i < incoming_application.size(); i++) {
-        if (((float) incoming_application[i]->ready_time) <= current_time) {
-            total_task_list->push_back(ApplicationTopologyServices::getVertices(incoming_application[i]->application));
+        if (incoming_application[i].ready_time <= current_time) {
+            total_task_list->push_back(ApplicationTopologyServices::getVertices(incoming_application[i].application));
             incoming_application.erase(incoming_application.begin() + i);
             i = i - 1;
         }
