@@ -10,8 +10,6 @@
 using namespace std;
 using namespace boost;
 
-float instruction_size = 0.04;
-
 /**
  * This function checks if a given node is a viable deployment candidate for a task
  * @param task - The task to be deployed
@@ -21,24 +19,44 @@ float instruction_size = 0.04;
 bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &vt) {
     ComputationNode node = (vt.type == mobile) ? vt.mobileNode.get() : (vt.type == cloud) ? vt.comp.get()
                                                                                           : vt.edgeNode.get();
-    //If the node is busy it is not valid
-    if (!node.isFree())
-        return false;
+
+    float total_ram_usage = 0.0f;
+    float total_storage_usage = 0.0f;
+    int total_cores_used = 0;
+
+    for (const auto &item: node.getTaskVector()) {
+        total_ram_usage += item.getRam();
+        total_storage_usage += item.getStorage();
+        total_cores_used += item.getCoreCount();
+    }
 
     //If the node must be processed locally, we check if this is the source node.
     if (!task.isOffload() && vt.type == mobile) {
         if (node.getId() != task.getSourceMobileId())
             return false;
+
+        else {
+            if ((total_ram_usage + task.getRam()) > node.getRam())
+                return false;
+            if ((total_storage_usage + task.getStorage()) > node.getStorage())
+                return false;
+            if ((total_cores_used + task.getCoreCount()) > node.getCores())
+                return false;
+        }
     }
-    else if(!task.isOffload() && vt.type != mobile){
+
+        //If the task can't be offloaded but the node in question is not the mobile
+    else if (!task.isOffload() && vt.type != mobile) {
         return false;
     }
 
         //Checking if it meets the resource requirements
     else {
-        if (task.getRam() > node.getRam())
+        if ((total_ram_usage + task.getRam()) > node.getRam())
             return false;
-        if (task.getStorage() > node.getStorage())
+        if ((total_storage_usage + task.getStorage()) > node.getStorage())
+            return false;
+        if ((total_cores_used + task.getCoreCount()) > node.getCores())
             return false;
     }
     return true;
@@ -60,9 +78,10 @@ pair<int, float> SimulatorFunctions::ChooseNode(
         Task &task, float current_time, NetworkTopology &topology) {
 
     int index = -1;
-    float min_run_time = INT_MAX;
+    float min_run_time = ((float) INT_MAX);
 
     int source_node_index = 0;
+
     //Get the graph index of the source device of the task
     for (auto vertex = networkList.begin(); vertex != networkList.end(); vertex++) {
         ComputationNode temp = (vertex->m_property.type == mobile) ? vertex->m_property.mobileNode.get()
@@ -70,14 +89,15 @@ pair<int, float> SimulatorFunctions::ChooseNode(
                                                                      ? vertex->m_property.comp.get()
                                                                      : vertex->m_property.edgeNode.get();
 
-        if (temp.getId() == task.getSourceMobileId())
-            source_node_index = std::distance(networkList.begin(), vertex);
+        if (temp.getId() == task.getSourceMobileId()) {
+            source_node_index = ((int) std::distance(networkList.begin(), vertex));
+            break;
+        }
     }
 
-    NetworkVertexData chosenNode;
     for (auto vertex = networkList.begin(); vertex != networkList.end(); vertex++) {
         if (SimulatorFunctions::isValidNode(task, vertex->m_property)) {
-            int current_node_index = std::distance(networkList.begin(), vertex);
+            int current_node_index = ((int) std::distance(networkList.begin(), vertex));
 
             float current_run_time = SimulatorFunctions::calculateRunTime(task, source_node_index, current_node_index,
                                                                           networkList, current_time, topology);
@@ -104,23 +124,35 @@ float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, in
                                      : networkList[currentNodeIndex].m_property.edgeNode.get();
 
 
-    float rt_local = task.getMillionsOfInstructions() / current_node.getMillionsInstructionsPerCore();
+    float rt_local = (float) task.getMillionsOfInstructions() / (float) current_node.getMillionsInstructionsPerCore();
 
     //If the task is not allowed to be offloaded and this is the source task we do not need to calculate bandwidth
     //as there's no data to transfer
     if (source_node_index == currentNodeIndex)
-        return rt_local;
+        return current_time += rt_local;
 
     float bandwidth = NetworkTopologyServices::getBandwidth(source_node_index, currentNodeIndex, network);
-    float ot_up = ((task.getMillionsOfInstructions() * instruction_size) + task.getDataIn()) / bandwidth;
-    float ot_down = task.getDataOut() / bandwidth;
+    auto mi = (float) (task.getMillionsOfInstructions() * 1000000);
+    float ot_up = ((mi * INSTRUCTION_SIZE_MEGABYTES) + ((float) task.getDataIn())) / bandwidth;
+    float ot_down = ((float) task.getDataOut()) / bandwidth;
 
     return current_time + rt_local + ot_up + ot_down;
 }
 
-void SimulatorFunctions::programLoop(NetworkTopology &network, ApplicationTopology &navigator) {
+void SimulatorFunctions::programLoop(NetworkTopology &network, vector<ApplicationEvent *> incoming_applications,
+                                     float completion_time) {
+    int total_task_count = 0;
+
+    for (auto &incoming_application : incoming_applications)
+        total_task_count += ((int) incoming_application->application.m_vertices.size());
+
+    //Represents time in seconds
+    float time = 0.0f;
+
+    //Will contain queue of tasks for each application currently offloading
+    vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> total_task_lists;
+
     //Retrieving the list of vertices and their edges(in & out) in both our generated application and our network
-    auto navigatorVertexList = ApplicationTopologyServices::getVertices(navigator);
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
 
     //Will hold the tasks ready to be offloaded in each loop
@@ -133,51 +165,76 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, ApplicationTopolo
     //Contains a finished list of tasks
     vector<TaskMapping> finished;
 
-    //Represents time in seconds
-    float time = 0.0f;
-
-    while (finished.size() != navigatorVertexList.size()) {
+    while (!(time >= completion_time || (finished.size() == total_task_count && incoming_applications.empty()))) {
         //Sorting the current event list from most recent to oldest time
         inProgress = SimulatorFunctions::sortEventList(inProgress);
 
         //Moving to the next event
         SimulatorFunctions::UpdateEventList(inProgress, finished, time);
 
-        readyTaskList = SimulatorFunctions::getReadyTasks(navigatorVertexList);
+        //Iterating through each application queue
+        for (auto &taskList: total_task_lists) {
+            readyTaskList = SimulatorFunctions::getReadyTasks(taskList);
 
-        int readyNodesCount = networkVertexList.size() - inProgress.size();
+            int task_count = ((int) readyTaskList.size());
 
-        int count = (readyTaskList.size() < readyNodesCount) ? readyTaskList.size() : readyNodesCount;
+            for (int i = 0; i < task_count; i++) {
+                auto &selectedTask = readyTaskList.back().get().m_property;
+                readyTaskList.pop_back();
 
-        for (int i = 0; i < count; i++) {
-            auto &selectedTask = readyTaskList.back().get().m_property;
-            readyTaskList.pop_back();
+                pair<int, float> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
+                                                                                   selectedTask.task.get(), time,
+                                                                                   network);
 
-            pair<int, float> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
-                                                                               selectedTask.task.get(), time, network);
+                if (selectedNodeData.first == -1)
+                    continue;
 
-            if(selectedNodeData.first == -1)
-                continue;
+                auto &selectedNode = networkVertexList[selectedNodeData.first].m_property;
 
-            auto &selectedNode = networkVertexList[selectedNodeData.first].m_property;
+                selectedTask.task.get().setInProgress(true);
 
-            selectedTask.task.get().setInProgress(true);
+                //Upcasting our selected node to base class for convenience
+                ComputationNode &node = (selectedNode.type == mobile) ? selectedNode.mobileNode.get()
+                                                                      : (selectedNode.type ==
+                                                                         cloud)
+                                                                        ? selectedNode.comp.get()
+                                                                        : selectedNode.edgeNode.get();
 
-            //Marking the selected node as busy
-            if (selectedNode.type == mobile)
-                selectedNode.mobileNode->setIsFree(false);
-            else if (selectedNode.type == cloud) {
-                selectedNode.comp->setIsFree(false);
-            } else if (selectedNode.type == node_type::edge)
-                selectedNode.edgeNode->setIsFree(false);
+                //Adding the selected task to our selected node
+                (const_cast<vector<struct Task> &>(node.getTaskVector())).push_back(selectedTask.task.get());
 
-            //Adding our mapping to the event list
-            inProgress.push_back({time, selectedNodeData.second, selectedTask, selectedNode});
+                //Adding our mapping to the event list
+                inProgress.push_back({time, selectedNodeData.second, selectedTask, selectedNode});
+            }
         }
 
+        SimulatorFunctions::checkIncomingApplications(&total_task_lists, &incoming_applications, time);
     }
 
     main::logResults(finished);
+}
+
+/**
+ * This function is responsible for checking the incoming application queue in order to decide
+ * when to begin offloading an application
+ *
+ * @param total_task_list - A matrix with each top level index containing an applications list of tasks
+ * @param applications - The applications yet to be offloaded
+ * @param current_time - The current time of the simulation
+ */
+void SimulatorFunctions::checkIncomingApplications(
+        vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
+        vector<ApplicationEvent *> *applications,
+        float current_time) {
+
+    vector<ApplicationEvent *> &incoming_application = *applications;
+    for (int i = 0; i < incoming_application.size(); i++) {
+        if (((float) incoming_application[i]->ready_time) <= current_time) {
+            total_task_list->push_back(ApplicationTopologyServices::getVertices(incoming_application[i]->application));
+            incoming_application.erase(incoming_application.begin() + i);
+            i = i - 1;
+        }
+    }
 }
 
 /**
@@ -198,12 +255,21 @@ void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector
         tM.task.get().task.get().setDone(true);
         tM.task.get().task.get().setInProgress(false);
 
-        if (tM.node.get().type == mobile)
-            tM.node.get().mobileNode->setIsFree(true);
-        else if (tM.node.get().type == cloud)
-            tM.node.get().comp->setIsFree(true);
-        else if (tM.node.get().type == node_type::edge)
-            tM.node.get().edgeNode->setIsFree(true);
+        ComputationNode &node = (tM.node.get().type == mobile) ? tM.node.get().mobileNode.get() : (tM.node.get().type ==
+                                                                                                   cloud)
+                                                                                                  ? tM.node.get().comp.get()
+                                                                                                  : tM.node.get().edgeNode.get();
+
+        int task_index_to_rem = -1;
+        for (int i = 0; i < node.getTaskVector().size(); i++) {
+            if (tM.task.get().task->getId() == node.getTaskVector()[i].getId()) {
+                task_index_to_rem = i;
+                break;
+            }
+        }
+
+        (const_cast<vector<struct Task> &> (node.getTaskVector())).erase(
+                node.getTaskVector().begin() + task_index_to_rem);
 
         finished.push_back(tM);
     }
@@ -228,7 +294,7 @@ SimulatorFunctions::getReadyTasks(
 
     vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> res;
     for (auto &vertex : taskList) {
-        Task& tempTask = vertex.m_property.task.get();
+        Task &tempTask = vertex.m_property.task.get();
         if (!vertex.m_property.task->isDone() && !vertex.m_property.task->isInProgress()) {
             //If a task depends on no other tasks and is not in progress or completed
             // then it is ready to be offloaded
@@ -239,7 +305,7 @@ SimulatorFunctions::getReadyTasks(
                 bool ready = true;
                 //Checking to see if the incoming edges(tasks a task depends upon) are completed
                 for (auto edge : vertex.m_in_edges) {
-                    Task& edgeTemp = taskList[edge.m_target].m_property.task.get();
+                    Task &edgeTemp = taskList[edge.m_target].m_property.task.get();
                     if (!taskList[edge.m_target].m_property.task->isDone() ||
                         taskList[edge.m_target].m_property.task->isInProgress()) {
                         ready = false;

@@ -8,19 +8,32 @@
 
 #include <iostream>
 
+const float INSTRUCTION_SIZE_MEGABYTES = 0.000002;
+
 class Task {
 private:
+    static int task_id_counter;
+    int id;
+
     std::string name;
 
     int source_mobile_id;
 
     unsigned long long int millions_of_instructions;
+
+    //Gigabytes
     float ram;
 
+    //Megabytes
     unsigned int data_in;
+
+    //Megabytes
     unsigned int data_out;
+
+    //Megabytes
     float storage;
 
+    int core_count = 0;
     bool done = false;
     bool in_progress = false;
 
@@ -29,7 +42,11 @@ private:
 
 public:
     Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-         unsigned int dataOut, unsigned int storage, int source_mobile_id, bool can_offload);
+         unsigned int dataOut, unsigned int storage, int source_mobile_id, bool can_offload, int coreCount);
+
+    int getCoreCount() const;
+
+    int getId() const;
 
     bool isOffload() const;
 

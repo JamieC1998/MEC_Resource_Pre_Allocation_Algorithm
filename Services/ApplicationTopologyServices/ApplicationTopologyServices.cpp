@@ -9,15 +9,15 @@
 using namespace std;
 
 ApplicationTopology ApplicationTopologyServices::generateNavigator(int source_mobile_id) {
-    Task rootTask("CONF_PANEL", 1, 1, 5, 5, 1, source_mobile_id, false);
-    Task gpsTask("GPS", 1, 3, 5, 5, 5, source_mobile_id, true);
-    Task controlTask("CONTROL", 2, 3, 5, 5, 1, source_mobile_id, true);
-    Task mapsTask("MAPS", 3, 5, 50, 50, 5, source_mobile_id, true);
-    Task pathCalcTask("PATH_CALC", 5, 2, 50, 50, 5, source_mobile_id, true);
-    Task trafficTask("TRAFFIC", 5, 1, 50, 50, 5, source_mobile_id, true);
-    Task voiceSynthTask("VOICE_SYNTH", 2, 1, 5, 20, 5, source_mobile_id, true);
-    Task guiTask("GUI", 2, 1, 5, 20, 5, source_mobile_id, true);
-    Task speedTrapTask("SPEED_TRAP", 2, 1, 10, 10, 5, source_mobile_id, true);
+    Task rootTask("CONF_PANEL", 1, 1, 5, 5, 1, source_mobile_id, false, 1);
+    Task gpsTask("GPS", 1, 3, 5, 5, 5, source_mobile_id, true, 1);
+    Task controlTask("CONTROL", 2, 3, 5, 5, 1, source_mobile_id, true, 1);
+    Task mapsTask("MAPS", 3, 5, 50, 50, 5, source_mobile_id, true, 1);
+    Task pathCalcTask("PATH_CALC", 5, 2, 50, 50, 5, source_mobile_id, true, 1);
+    Task trafficTask("TRAFFIC", 5, 1, 50, 50, 5, source_mobile_id, true, 1);
+    Task voiceSynthTask("VOICE_SYNTH", 2, 1, 5, 20, 5, source_mobile_id, true, 1);
+    Task guiTask("GUI", 2, 1, 5, 20, 5, source_mobile_id, true, 1);
+    Task speedTrapTask("SPEED_TRAP", 2, 1, 10, 10, 5, source_mobile_id, true, 1);
 
     ApplicationTopology a;
 
@@ -41,6 +41,26 @@ ApplicationTopology ApplicationTopologyServices::generateNavigator(int source_mo
     auto e8 = add_edge(v5, v7, 1, a);
     auto e9 = add_edge(v5, v8, 1, a);
     auto e10 = add_edge(v5, v9, 1, a);
+
+    return a;
+}
+
+ApplicationTopology ApplicationTopologyServices::generateChessApp(int source_mobile_id) {
+    Task guiTask("GUI", 4, 1, 5, 5, 1, source_mobile_id, false, 1);
+    Task updateChessTask("UPDATE_CHESS", 2, 1, 5, 5, 1, source_mobile_id, true, 1);
+    Task computeMovesTask("COMPUTE_MOVES", 2, 1, 5, 5, 1, source_mobile_id, true, 4);
+    Task outputTask("OUTPUT_TASK", 2, 1, 5, 5, 1, source_mobile_id, false, 1);
+
+    ApplicationTopology a;
+
+    auto v1 = add_vertex({guiTask}, a);
+    auto v2 = add_vertex({updateChessTask}, a);
+    auto v3 = add_vertex({computeMovesTask}, a);
+    auto v4 = add_vertex({outputTask}, a);
+
+    auto e1 = add_edge(v1, v2, 1, a);
+    auto e2 = add_edge(v2, v3, 1, a);
+    auto e3 = add_edge(v3, v4, 1, a);
 
     return a;
 }
