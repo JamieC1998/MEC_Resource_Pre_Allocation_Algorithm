@@ -5,16 +5,25 @@
 #include <sstream>
 #include "Task.h"
 
+int Task::task_id_counter = 0;
+
 Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-           unsigned int dataOut, unsigned int storage, int sourceMobileId, bool canOffload) : name(name),
-                                                                                              millions_of_instructions(
-                                                                                                      millionsOfInstructions),
-                                                                                              ram(ram), data_in(dataIn),
-                                                                                              data_out(dataOut),
-                                                                                              storage(storage),
-                                                                                              source_mobile_id(
-                                                                                                      sourceMobileId),
-                                                                                              offload(canOffload) {}
+           unsigned int dataOut, unsigned int storage, int sourceMobileId, bool canOffload, int coreCount) : name(name),
+                                                                                                             millions_of_instructions(
+                                                                                                                     millionsOfInstructions),
+                                                                                                             ram(ram),
+                                                                                                             data_in(dataIn),
+                                                                                                             data_out(
+                                                                                                                     dataOut),
+                                                                                                             storage(storage),
+                                                                                                             source_mobile_id(
+                                                                                                                     sourceMobileId),
+                                                                                                             offload(canOffload),
+                                                                                                             id(task_id_counter),
+                                                                                                             core_count(
+                                                                                                                     coreCount) {
+    Task::task_id_counter++;
+}
 
 unsigned long long int Task::getMillionsOfInstructions() const {
     return millions_of_instructions;
@@ -61,10 +70,16 @@ void Task::setName(const std::string &name) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Task &task) {
-    return (os << " Name: " << task.getName() << "\n RAM: " << task.getRam() << "\n MI: "
-               << task.getMillionsOfInstructions() << "\n Data in: "
-               << task.getDataIn() << "\n Data out: " << task.getRam() << "\n Storage: " << task.getStorage()
-               << "\n Source Mobile ID: " << task.getSourceMobileId() << "\n Can Offload: " << task.isOffload()
+    return (os << " Name: " << task.getName()
+               << "\n RAM: " << task.getRam()
+               << "\n MI: " << task.getMillionsOfInstructions()
+               << "\n CORES: " << task.getCoreCount()
+               << "\n Data in: " << task.getDataIn()
+               << "\n Data out: " << task.getDataOut()
+               << "\n Storage: " << task.getStorage()
+               << "\n Source Mobile ID: " << task.getSourceMobileId()
+               << "\n Can Offload: " << task.isOffload()
+               << "\n TASK ID: " << task.getId()
                << std::endl);
 }
 
@@ -100,4 +115,12 @@ int Task::getSourceMobileId() const {
 
 bool Task::isOffload() const {
     return offload;
+}
+
+int Task::getId() const {
+    return id;
+}
+
+int Task::getCoreCount() const {
+    return core_count;
 }

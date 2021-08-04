@@ -21,6 +21,6 @@ add_executable(FirstHopMobileOffloading
         Services/ApplicationTopologyServices/ApplicationTopologyServices.cpp
         Services/ApplicationTopologyServices/ApplicationTopologyServices.h
         Models/VertexData/TaskVertexData.h
-        Services/SimulatorTopologyServices/SimulatorFunctions.cpp
-        Services/SimulatorTopologyServices/SimulatorFunctions.h
+        Services/SimulatorServices/SimulatorFunctions.cpp
+        Services/SimulatorServices/SimulatorFunctions.h
         )

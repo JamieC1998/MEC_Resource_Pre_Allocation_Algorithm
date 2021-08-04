@@ -5,13 +5,12 @@
 #include "main.h"
 #include <Services/NetworkTopologyServices/NetworkTopologyServices.h>
 #include <Services/ApplicationTopologyServices/ApplicationTopologyServices.h>
-#include <Services/SimulatorTopologyServices/SimulatorFunctions.h>
+#include <Services/SimulatorServices/SimulatorFunctions.h>
 
 using namespace std;
 
 int main() {
     NetworkTopology network = NetworkTopologyServices::generateNetwork();
-    NetworkTopologyServices::logInfo(network);
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
 
     int source_mobile_id = 0;
@@ -23,13 +22,17 @@ int main() {
         }
     }
 
-    cout << endl << "NAVIGATOR " << endl;
-    ApplicationTopology navigator = ApplicationTopologyServices::generateNavigator(source_mobile_id);
-    ApplicationTopologyServices::logInfo(navigator);
+    ApplicationEvent navigator = {0, ApplicationTopologyServices::generateNavigator(source_mobile_id)};
+    ApplicationEvent chessApp = {0, ApplicationTopologyServices::generateChessApp(source_mobile_id)};
 
-//    main::programLoop(network, navigator);
+    float completion_time = 20.0f;
 
-    SimulatorFunctions::programLoop(network, navigator);
+    vector<ApplicationEvent *> application_events;
+    application_events.push_back(&navigator);
+    application_events.push_back(&chessApp);
+
+    SimulatorFunctions::programLoop(network, application_events, completion_time);
+
     return 0;
 }
 
@@ -37,6 +40,7 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
     //Retrieving the list of vertices and their edges(in & out) in both our generated application and our network
     auto navigatorVertexList = ApplicationTopologyServices::getVertices(navigator);
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
+
     //Will hold the tasks ready to be offloaded in each loop
     vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
             readyTaskList;
@@ -109,21 +113,21 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
 
 void main::logResults(const vector<TaskMapping> &finished) {
     cout << endl << "LOGGING MAPPING RESULTS:" << endl;
-    for (auto taskMapping : finished) {
+    for (const auto &i : finished) {
         cout << "====================" << endl;
         cout << "TASK: " << endl;
-        cout << taskMapping.task.get().task->to_string() << endl;
+        cout << i.task.get().task->to_string() << endl;
         cout << "VERTEX:" << endl;
 
-        if (taskMapping.node.get().type == cloud)
-            cout << taskMapping.node.get().comp->to_string();
-        else if (taskMapping.node.get().type == node_type::edge)
-            cout << taskMapping.node.get().edgeNode->to_string();
-        else if (taskMapping.node.get().type == mobile)
-            cout << taskMapping.node.get().mobileNode->to_string();
+        if (i.node.get().type == cloud)
+            cout << i.node.get().comp->to_string();
+        else if (i.node.get().type == node_type::edge)
+            cout << i.node.get().edgeNode->to_string();
+        else if (i.node.get().type == mobile)
+            cout << i.node.get().mobileNode->to_string();
 
-        cout << endl << "START TIME: " << taskMapping.absoluteStart << endl;
-        cout << "FINISH TIME: " << taskMapping.absoluteFinish << endl;
+        cout << endl << "START TIME: " << i.absoluteStart << endl;
+        cout << "FINISH TIME: " << i.absoluteFinish << endl;
     }
 }
 

@@ -13,7 +13,11 @@ class SimulatorFunctions {
 public:
     static bool isValidNode(const Task &task, const NetworkVertexData &vt);
 
-    static void programLoop(NetworkTopology &network, ApplicationTopology &navigator);
+    static void programLoop(NetworkTopology &network, std::vector<ApplicationEvent *> incoming_applications, float completion_time);
+
+    static void checkIncomingApplications(
+            std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
+            std::vector<ApplicationEvent *> *applications, float current_time);
 
     static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time);
 
@@ -24,8 +28,8 @@ public:
             Task &task, float current_time, NetworkTopology &topology);
 
     static float calculateRunTime(Task &task, int source_node_index, int currentNodeIndex,
-                           std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-                           float current_time, NetworkTopology &network);
+                                  std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
+                                  float current_time, NetworkTopology &network);
 
     static std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
     getReadyTasks(

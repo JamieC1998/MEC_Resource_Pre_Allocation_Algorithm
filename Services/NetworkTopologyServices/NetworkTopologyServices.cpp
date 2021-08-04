@@ -103,8 +103,8 @@ void NetworkTopologyServices::logInfo(NetworkTopology &network) {
 
     cout << "Shortest route between vertices " << start << " and " << goal << ":" << endl;
 
-    for (std::vector<int>::iterator it = route.begin(); it != route.end(); ++it) {
-        cout << " Vertex: " << *it << endl;
+    for (int & it : route) {
+        cout << " Vertex: " << it << endl;
     }
 }
 
@@ -116,14 +116,9 @@ float NetworkTopologyServices::getBandwidth(int source, int destination, Network
 }
 
 NetworkTopology NetworkTopologyServices::generateNetwork() {
-    ComputationNode cloudNode(1, 15, 128, 1000, cloud);
-    cout << "Type " << cloudNode.printType() << endl;
-
+    ComputationNode cloudNode(4, 15, 128, 1000, cloud);
     EdgeNode edgeNode(1, 10, 8, 250, node_type::edge, make_pair(1, 1));
-    cout << "Type " << edgeNode.printType() << endl;
-
-    MobileNode mobileNode(1, 4, 8, 16, mobile, make_pair(2, 2));
-    cout << "Type " << mobileNode.printType() << endl << endl;
+    MobileNode mobileNode(2, 4, 8, 16, mobile, make_pair(2, 2));
 
     NetworkTopology g;
 

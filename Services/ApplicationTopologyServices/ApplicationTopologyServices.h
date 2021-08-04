@@ -17,6 +17,11 @@ typedef graph_traits<ApplicationTopology>::edge_iterator application_edge_iterat
 typedef graph_traits<ApplicationTopology>::vertex_iterator application_vertex_iterator;
 typedef graph_traits<ApplicationTopology>::vertex_descriptor application_vertex_descriptor;
 
+struct ApplicationEvent {
+    int ready_time = 0;
+    ApplicationTopology application;
+};
+
 class ApplicationTopologyServices {
 
 public:
@@ -27,6 +32,8 @@ public:
     getVertices(ApplicationTopology &application);
 
     static ApplicationTopology generateNavigator(int source_mobile_id);
+
+    static ApplicationTopology generateChessApp(int source_mobile_id);
 };
 
 
