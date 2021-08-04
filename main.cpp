@@ -6,10 +6,13 @@
 #include <Services/NetworkTopologyServices/NetworkTopologyServices.h>
 #include <Services/ApplicationTopologyServices/ApplicationTopologyServices.h>
 #include <Services/SimulatorServices/SimulatorFunctions.h>
+#include <Services/FileReader/FileReader.h>
 
 using namespace std;
 
 int main() {
+    float completion_time = 20.0f;
+
     NetworkTopology network = NetworkTopologyServices::generateNetwork();
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
 
@@ -22,14 +25,17 @@ int main() {
         }
     }
 
+    auto parsedApplications = FileReader::parseApplications("../input_applications.txt");
+    vector<ApplicationEvent> application_events;
+    for(auto& item: parsedApplications) {
+        ApplicationTopology a = ApplicationTopologyServices::generateApplications(item, source_mobile_id);
+        ApplicationEvent event = {item.first, a};
+        application_events.push_back(event);
+    }
+
     ApplicationEvent navigator = {0, ApplicationTopologyServices::generateNavigator(source_mobile_id)};
-    ApplicationEvent chessApp = {0, ApplicationTopologyServices::generateChessApp(source_mobile_id)};
 
-    float completion_time = 20.0f;
-
-    vector<ApplicationEvent *> application_events;
-    application_events.push_back(&navigator);
-    application_events.push_back(&chessApp);
+    application_events.push_back(navigator);
 
     SimulatorFunctions::programLoop(network, application_events, completion_time);
 
