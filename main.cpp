@@ -27,15 +27,12 @@ int main() {
 
     auto parsedApplications = FileReader::parseApplications("../input_applications.txt");
     vector<ApplicationEvent> application_events;
-    for(auto& item: parsedApplications) {
-        ApplicationTopology a = ApplicationTopologyServices::generateApplications(item, source_mobile_id);
-        ApplicationEvent event = {item.first, a};
-        application_events.push_back(event);
-    }
 
-    ApplicationEvent navigator = {0, ApplicationTopologyServices::generateNavigator(source_mobile_id)};
+    application_events.reserve(parsedApplications.size());
 
-    application_events.push_back(navigator);
+    for (auto &item: parsedApplications)
+        application_events.push_back(
+                {item.first, ApplicationTopologyServices::generateApplications(item, source_mobile_id)});
 
     SimulatorFunctions::programLoop(network, application_events, completion_time);
 

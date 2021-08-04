@@ -21,7 +21,7 @@ ApplicationTopology ApplicationTopologyServices::generateApplications(
         Task generated_task(strL[0], stoi(strL[1]), stof(strL[2]), stoi(strL[3]), stoi(strL[4]),
                             stoi(strL[5]), source_mobile_id, stoi(strL[6]), stoi(strL[7]));
 
-        auto vert = add_vertex({generated_task}, a);
+        add_vertex({generated_task}, a);
 
         for (auto &i : edgeL)
             add_edge(stoi(i), j, 1, a);
