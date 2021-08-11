@@ -25,7 +25,7 @@ int main() {
         }
     }
 
-    auto parsedApplications = FileReader::parseApplications("../input_applications.txt");
+    auto parsedApplications = FileReader::parseApplications("../input_new.txt", &completion_time);
     vector<ApplicationEvent> application_events;
 
     application_events.reserve(parsedApplications.size());

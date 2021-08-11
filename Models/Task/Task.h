@@ -42,7 +42,7 @@ private:
 
 public:
     Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-         unsigned int dataOut, unsigned int storage, int source_mobile_id, bool can_offload, int coreCount);
+         unsigned int dataOut, float storage, int source_mobile_id, bool can_offload, int coreCount);
 
     int getCoreCount() const;
 

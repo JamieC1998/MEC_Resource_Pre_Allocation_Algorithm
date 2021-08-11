@@ -8,7 +8,7 @@
 int Task::task_id_counter = 0;
 
 Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-           unsigned int dataOut, unsigned int storage, int sourceMobileId, bool canOffload, int coreCount) : name(name),
+           unsigned int dataOut, float storage, int sourceMobileId, bool canOffload, int coreCount) : name(name),
                                                                                                              millions_of_instructions(
                                                                                                                      millionsOfInstructions),
                                                                                                              ram(ram),

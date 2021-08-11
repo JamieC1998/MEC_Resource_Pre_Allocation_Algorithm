@@ -9,10 +9,13 @@
 #include <boost/algorithm/string.hpp>
 
 std::vector<std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>>>
-FileReader::parseApplications(std::string file_name) {
+FileReader::parseApplications(std::string file_name, float* time) {
     std::string myText;
 
     std::ifstream MyReadFile(file_name);
+
+    getline(MyReadFile, myText);
+    *time = std::stof(myText);
 
     getline(MyReadFile, myText);
     int applicationCount = std::stoi(myText);

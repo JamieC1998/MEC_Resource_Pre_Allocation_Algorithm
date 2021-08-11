@@ -12,7 +12,8 @@ class FileReader {
 
 public:
     static std::vector<std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>>>
-    parseApplications(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> file_name);
+    parseApplications(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>> file_name,
+                      float *time);
 };
 
 
