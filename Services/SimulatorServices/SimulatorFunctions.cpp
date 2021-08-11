@@ -157,14 +157,14 @@ void SimulatorFunctions::processReadyTasks(
               [](std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> a,
                  std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> b) {
 
-                return !a.get().m_property.task.get().isOffload();
+                  return !a.get().m_property.task.get().isOffload();
               });
 
 }
 
-void SimulatorFunctions::algorithmCode(
+void SimulatorFunctions::taskMapping(
         float time,
-        NetworkTopology network,
+        NetworkTopology &network,
         vector<TaskMapping> *inProgress,
         TaskVertexData &selectedTask,
         vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList) {
@@ -172,6 +172,7 @@ void SimulatorFunctions::algorithmCode(
                                                                        selectedTask.task.get(), time,
                                                                        network);
 
+    //If a valid node has not been found
     if (selectedNodeData.first == -1)
         return;
 
@@ -190,6 +191,27 @@ void SimulatorFunctions::algorithmCode(
     (const_cast<vector<struct Task> &>(node.getTaskVector())).push_back(selectedTask.task.get());
 
     inProgress->push_back({time, selectedNodeData.second, selectedTask, selectedNode});
+}
+
+void SimulatorFunctions::runAlgorithm(
+        vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
+        &readyTaskList,
+        vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
+        vector<TaskMapping> &inProgress,
+        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList,
+        NetworkTopology &network,
+        float time) {
+
+    SimulatorFunctions::processReadyTasks(&readyTaskList, &total_task_lists);
+
+    int task_count = ((int) readyTaskList.size());
+
+    for (int i = 0; i < task_count; i++) {
+        TaskVertexData &selectedTask = readyTaskList.back().get().m_property;
+        readyTaskList.pop_back();
+
+        SimulatorFunctions::taskMapping(time, network, &inProgress, selectedTask, networkVertexList);
+    }
 }
 
 void SimulatorFunctions::programLoop(NetworkTopology &network, vector<ApplicationEvent> incoming_applications,
@@ -225,18 +247,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
         //Moving to the next event
         SimulatorFunctions::UpdateEventList(inProgress, finished, time);
 
-        SimulatorFunctions::processReadyTasks(&readyTaskList, &total_task_lists);
-
-        int task_count = ((int) readyTaskList.size());
-
-        vector<TaskMapping> tempMapping;
-
-        for (int i = 0; i < task_count; i++) {
-            TaskVertexData &selectedTask = readyTaskList.back().get().m_property;
-            readyTaskList.pop_back();
-
-            SimulatorFunctions::algorithmCode(time, network, &inProgress, selectedTask, networkVertexList);
-        }
+        SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time);
 
         /**
          * If there are no tasks in progress and no tasks ready, that means that
