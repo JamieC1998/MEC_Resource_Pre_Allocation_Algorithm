@@ -69,8 +69,16 @@ int ComputationNode::getId() const {
     return id;
 }
 
-const std::vector<Task> &ComputationNode::getTaskVector() const {
+const std::vector<NodeMapping> &ComputationNode::getTaskVector() const {
     return taskVector;
+}
+
+const std::vector<NodeMapping> &ComputationNode::getReservations() const {
+    return reservations;
+}
+
+void ComputationNode::setReservations(const std::vector<NodeMapping> &reservations) {
+    ComputationNode::reservations = reservations;
 }
 
 

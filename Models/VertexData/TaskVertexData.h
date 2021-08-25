@@ -5,8 +5,8 @@
 #ifndef FIRSTHOPMOBILEOFFLOADING_TASKVERTEXDATA_H
 #define FIRSTHOPMOBILEOFFLOADING_TASKVERTEXDATA_H
 
-#include <Models/Task/Task.h>
 #include <boost/optional.hpp>
+#include <Models/Task/Task.h>
 
 struct TaskVertexData {
     boost::optional<Task> task;

@@ -5,10 +5,15 @@
 #ifndef FIRSTHOPMOBILEOFFLOADING_COMPUTATIONNODE_H
 #define FIRSTHOPMOBILEOFFLOADING_COMPUTATIONNODE_H
 
-#include <enums/NodeTypes.h>
-#include <iostream>
 #include <Models/Task/Task.h>
+#include <Models/Mappings/ReservationMapping.h>
+#include <enums/NodeTypes.h>
 #include <vector>
+
+struct NodeMapping {
+    Task task;
+    std::pair<float, float> timeWindow;
+};
 
 class ComputationNode {
 private:
@@ -24,19 +29,26 @@ private:
     //Megabytes
     float storage;
 
-    std::vector<Task> taskVector;
+    std::vector<NodeMapping> taskVector;
 
     node_type type;
     bool is_free;
 
+    std::vector<NodeMapping> reservations;
+
 public:
     ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
                     node_type type);
+
+    const std::vector<NodeMapping> &getReservations() const;
+
+    void setReservations(const std::vector<NodeMapping> &reservations);
+
     int getId() const;
 
-    const std::vector<Task> &getTaskVector() const;
+    const std::vector<NodeMapping> &getTaskVector() const;
 
-    friend std::ostream& operator << (std::ostream &os, const ComputationNode &cN);
+    friend std::ostream &operator<<(std::ostream &os, const ComputationNode &cN);
 
     std::string to_string();
 

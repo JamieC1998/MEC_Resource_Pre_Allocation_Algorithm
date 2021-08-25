@@ -5,7 +5,6 @@
 #ifndef FIRSTHOPMOBILEOFFLOADING_MOBILENODE_H
 #define FIRSTHOPMOBILEOFFLOADING_MOBILENODE_H
 
-
 #include <Models/EdgeNode/EdgeNode.h>
 
 class MobileNode : public EdgeNode {

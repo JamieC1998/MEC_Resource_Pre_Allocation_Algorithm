@@ -5,7 +5,6 @@
 #ifndef FIRSTHOPMOBILEOFFLOADING_FILEREADER_H
 #define FIRSTHOPMOBILEOFFLOADING_FILEREADER_H
 
-
 #include <string>
 
 class FileReader {

@@ -6,13 +6,13 @@ APP_0_Input_Layer_0 9 3.32 34 41 1.78 1 2
 
 APP_0_Input_Layer_1 4 3.33 10 24 1.33 0 3
 
-APP_0_Input_Layer_2 5 1.5 41 46 1.67 0 2
+APP_0_Input_Layer_2 5 1.5 41 46 1.67 1 2
 
-APP_0_Inner_Layer_0:0 2 3.24 27 20 3.73 0 2
+APP_0_Inner_Layer_0:0 2 3.24 27 20 3.73 1 2
 1 0
-APP_0_Inner_Layer_0:1 8 2.77 2 31 3.87 0 3
+APP_0_Inner_Layer_0:1 8 2.77 2 31 3.87 1 3
 1
-APP_0_Inner_Layer_0:2 8 2.61 14 18 3.62 0 1
+APP_0_Inner_Layer_0:2 8 2.61 14 18 3.62 1 1
 0 2
 APP_0_Inner_Layer_0:3 5 3.96 21 46 3.83 0 1
 1
@@ -22,19 +22,19 @@ APP_0_Output_Layer_0 8 3.31 49 29 1.33 0 1
 9.173307536499845
 APP_1_Input_Layer_0 3 2.57 9 18 1.08 0 3
 
-APP_1_Input_Layer_1 5 3.64 20 35 2.48 0 1
+APP_1_Input_Layer_1 5 3.64 20 35 2.48 1 1
 
-APP_1_Inner_Layer_0:0 6 3.3 25 42 3.13 0 1
+APP_1_Inner_Layer_0:0 6 3.3 25 42 3.13 1 1
 0
-APP_1_Inner_Layer_0:1 2 3.37 48 3 1.52 0 3
+APP_1_Inner_Layer_0:1 2 3.37 48 3 1.52 1 3
 1
-APP_1_Inner_Layer_1:0 4 1.17 42 39 1.19 0 3
+APP_1_Inner_Layer_1:0 4 1.17 42 39 1.19 1 3
 2
-APP_1_Inner_Layer_1:1 9 1.84 8 37 2.47 0 1
+APP_1_Inner_Layer_1:1 9 1.84 8 37 2.47 1 1
 2
-APP_1_Inner_Layer_1:2 9 1.0 9 7 2.7 0 1
+APP_1_Inner_Layer_1:2 9 1.0 9 7 2.7 1 1
 3
 APP_1_Output_Layer_0 7 1.1 42 32 2.61 0 2
 4 6
-APP_1_Output_Layer_1 1 2.08 12 44 3.18 0 1
+APP_1_Output_Layer_1 1 2.08 12 44 3.18 1 1
 5 4

@@ -1,11 +1,13 @@
 //
 // Created by Jamie Cotter on 22/07/2021.
 //
-#include <boost/graph/adjacency_list.hpp>
-#include <Models/VertexData/NetworkVertexData.h>
+
 
 #ifndef FIRSTHOPMOBILEOFFLOADING_NETWORKTOPOLOGYSERVICES_H
 #define FIRSTHOPMOBILEOFFLOADING_NETWORKTOPOLOGYSERVICES_H
+
+#include <boost/graph/adjacency_list.hpp>
+#include <Models/VertexData/NetworkVertexData.h>
 
 using namespace boost;
 
