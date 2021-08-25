@@ -307,8 +307,6 @@ void SimulatorFunctions::preallocateTasks(
         float time,
         TaskMapping map,
         vector<TaskMapping> *inProgress) {
-    if(selectedTask.task->getName() == "APP_1_Input_Layer_0")
-        cout << "WOWEE";
 
     auto outGoingTasks = SimulatorFunctions::getOutGoingTasks(total_task_lists, selectedTask);
 
