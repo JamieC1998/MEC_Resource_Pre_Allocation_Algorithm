@@ -94,7 +94,7 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
  */
 pair<int, float> SimulatorFunctions::ChooseNode(
         vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-        Task &task, float current_time, NetworkTopology &topology, vector<TaskMapping *> parents, float &startTime) {
+        Task &task, float current_time, NetworkTopology &topology, vector<TaskMapping> parents, float &startTime) {
 
     int index = -1;
     float min_run_time = ((float) INT_MAX);
@@ -139,7 +139,7 @@ pair<int, float> SimulatorFunctions::ChooseNode(
 float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int currentNodeIndex,
                                            vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
                                            float current_time, NetworkTopology &network,
-                                           vector<TaskMapping *> parents, float &startTime) {
+                                           vector<TaskMapping> parents, float &startTime) {
 
     ComputationNode current_node = (networkList[currentNodeIndex].m_property.type == mobile)
                                    ? networkList[currentNodeIndex].m_property.mobileNode.get()
@@ -163,9 +163,9 @@ float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, in
     }
 
     for (auto &parent : parents) {
-        float bw = NetworkTopologyServices::getBandwidth(parent->nodeIndex, currentNodeIndex, network);
-        float tmp_ot_up = (bw == 0) ? (parent->absoluteFinish + 0.0001f) :
-                          (parent->task.get().task->getDataOut() / bw) + (parent->absoluteFinish);
+        float bw = NetworkTopologyServices::getBandwidth(parent.nodeIndex, currentNodeIndex, network);
+        float tmp_ot_up = (bw == 0) ? (parent.absoluteFinish + 0.0001f) :
+                          (parent.task.get().task->getDataOut() / bw) + (parent.absoluteFinish);
         if (tmp_ot_up > ot_up) ot_up = tmp_ot_up;
     }
 
@@ -201,7 +201,7 @@ SimulatorFunctions::checkIfTaskReserved(vector<ReservationMapping> &reservationQ
     int index = -1;
 
     for (int i = 0; i < reservationQueue.size(); i++) {
-        if (selectedTask.task.get().getId() == reservationQueue[i].task.task->getId()) {
+        if (selectedTask.task.get().getId() == reservationQueue[i].task->task->getId()) {
             index = i;
             break;
         }
@@ -232,9 +232,9 @@ void SimulatorFunctions::taskMapping(
     if (result != -1) {
         auto &reservedTask = reservationQueue[result];
 
-        //If our reservation isn't ready
-//        if(reservedTask.startTime > time)
-//            return;
+        // If our reservation isn't ready
+        if(reservedTask.startTime != time)
+            return;
 
         nodeIndex = reservationQueue[result].nodeIndex;
         selectedNode = &networkVertexList[(int) nodeIndex].m_property;
@@ -253,15 +253,16 @@ void SimulatorFunctions::taskMapping(
         int index = -1;
         auto &reservations = const_cast<vector<NodeMapping> &>(node.getReservations());
         for (int i = 0; i < reservations.size(); i++) {
-            if (reservations[i].task.getId() == reservedTask.task.task->getId()) {
+            if (reservations[i].task.getId() == reservedTask.task->task->getId()) {
                 index = i;
                 break;
             }
         }
 
         reservations.erase(std::begin(reservations) + index);
+        reservationQueue.erase(std::begin(reservationQueue) + result);
     } else {
-        vector<TaskMapping *> parents;
+        vector<TaskMapping> parents;
         pair<int, float> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
                                                                            selectedTask.task.get(), time,
                                                                            network, parents, startTime);
@@ -306,6 +307,8 @@ void SimulatorFunctions::preallocateTasks(
         float time,
         TaskMapping map,
         vector<TaskMapping> *inProgress) {
+    if(selectedTask.task->getName() == "APP_1_Input_Layer_0")
+        cout << "WOWEE";
 
     auto outGoingTasks = SimulatorFunctions::getOutGoingTasks(total_task_lists, selectedTask);
 
@@ -313,19 +316,19 @@ void SimulatorFunctions::preallocateTasks(
 
         int index = -1;
         for (int i = 0; i < reservationQueue.size(); i++) {
-            if (reservationQueue[i].task.task->getId() == outGoingTask->m_property.task->getId()) {
+            if (reservationQueue[i].task->task->getId() == outGoingTask->m_property.task->getId()) {
                 index = i;
             }
         }
 
         if (index != -1)
-            reservationQueue[index].parents.push_back(&map);
+            reservationQueue[index].parents.push_back(map);
         else {
-            std::vector<TaskMapping *> parents;
-            parents.push_back(&map);
+            std::vector<TaskMapping> parents;
+            parents.push_back(map);
 
 
-            ReservationMapping reservedNode{outGoingTask->m_property, -1, -1, -1, parents,
+            ReservationMapping reservedNode{&outGoingTask->m_property, -1, -1, -1, parents,
                                             static_cast<int>(outGoingTask->m_in_edges.size())};
 
             //1st index is the node it is allocated to, second is the time it will take, third is the task, 4th is placeholder
@@ -333,11 +336,6 @@ void SimulatorFunctions::preallocateTasks(
             index = reservationQueue.size() - 1;
         }
         if (reservationQueue[index].parents.size() == reservationQueue[index].parentCount) {
-            Task tmp = reservationQueue[index].task.task.get();
-
-            if (tmp.getId() == 7)
-                cout << "WOW";
-
             float startTime = 0.0f;
             auto chooseNode = SimulatorFunctions::ChooseNode(networkVertexList, outGoingTask->m_property.task.get(),
                                                              map.absoluteStart,
@@ -349,7 +347,7 @@ void SimulatorFunctions::preallocateTasks(
             //a node can be preallocated.
             if (chooseNode.first == -1) {
                 for (int i = 0; i < inProgress->size(); i++) {
-                    if (reservationQueue[index].parents[reservationQueue[index].parents.size() - 1]->absoluteStart >=
+                    if (reservationQueue[index].parents[reservationQueue[index].parents.size() - 1].absoluteStart >=
                         ((vector<TaskMapping>) *inProgress)[i].absoluteFinish)
                         continue;
 
@@ -360,17 +358,28 @@ void SimulatorFunctions::preallocateTasks(
                                                                 network, reservationQueue[index].parents,
                                                                 startTime);
 
-                    if(chooseNode.first != -1)
+                    if (chooseNode.first != -1)
                         break;
                 }
-                if(chooseNode.first == -1){
-                    for (int i = 0; i < reservationQueue.size(); i++){
-                        if(reservationQueue[index].task.task->getId() == reservationQueue[i].task.task->getId())
+                if (chooseNode.first == -1) {
+                    for (int i = 0; i < reservationQueue.size(); i++) {
+                        if (reservationQueue[index].task->task->getId() == reservationQueue[i].task->task->getId())
                             continue;
 
-                        if (reservationQueue[index].parents[reservationQueue[index].parents.size() - 1]->absoluteStart >=
-                        reservationQueue[i].finishTime)
+                        if (reservationQueue[index].parents[reservationQueue[index].parents.size() -
+                                                            1].absoluteStart >=
+                            reservationQueue[i].finishTime)
                             continue;
+
+                        startTime = 0.0f;
+                        chooseNode = SimulatorFunctions::ChooseNode(networkVertexList, outGoingTask->m_property.task.get(),
+                                                                    ((vector<TaskMapping>) *inProgress)[i].absoluteFinish +
+                                                                    0.0001f,
+                                                                    network, reservationQueue[index].parents,
+                                                                    startTime);
+
+                        if(chooseNode.first != -1)
+                            break;
 
                     }
                 }
@@ -389,7 +398,7 @@ void SimulatorFunctions::preallocateTasks(
             reservationItem.nodeIndex = chooseNode.first;
 
             vector<NodeMapping> nodeReservations = node.getReservations();
-            nodeReservations.push_back({reservationItem.task.task.get(), make_pair(startTime, chooseNode.second)});
+            nodeReservations.push_back({reservationItem.task->task.get(), make_pair(startTime, chooseNode.second)});
             node.setReservations(nodeReservations);
         }
     }
@@ -440,6 +449,14 @@ void SimulatorFunctions::runAlgorithm(
     }
 }
 
+vector<ReservationMapping> SimulatorFunctions::sortReservations(vector<ReservationMapping> reservationMappings) {
+    sort(std::begin(reservationMappings), std::end(reservationMappings),
+         [](ReservationMapping taskMapA, ReservationMapping taskMapB) {
+             return taskMapA.startTime > taskMapB.startTime;
+         });
+    return reservationMappings;
+}
+
 void SimulatorFunctions::programLoop(NetworkTopology &network, vector<ApplicationEvent> incoming_applications,
                                      float completion_time) {
     int total_task_count = 0;
@@ -471,9 +488,10 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
     while (!(time >= completion_time || (finished.size() == total_task_count && incoming_applications.empty()))) {
         //Sorting the current event list from most recent to oldest time
         inProgress = SimulatorFunctions::sortEventList(inProgress);
+        reservationQueue = SimulatorFunctions::sortReservations(reservationQueue);
 
         //Moving to the next event
-        SimulatorFunctions::UpdateEventList(inProgress, finished, time);
+        SimulatorFunctions::UpdateEventList(inProgress, finished, time, reservationQueue);
 
         SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time,
                                          reservationQueue);
@@ -482,7 +500,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
          * If there are no tasks in progress and no tasks ready, that means that
          * we are waiting for the next application to enter
          */
-        if (inProgress.empty() && readyTaskList.empty()) {
+        if (inProgress.empty() && readyTaskList.empty() && !incoming_applications.empty()) {
             auto min_time = (float) INT_MAX;
             for (auto &incoming_application : incoming_applications) {
                 if (incoming_application.ready_time < min_time)
@@ -528,8 +546,22 @@ void SimulatorFunctions::checkIncomingApplications(
  * @param finished - A reference to a vector that contains task mappings that are completed
  * @param time - A reference to the current time of the application to be updated with the current event finish time
  */
-void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector<TaskMapping> &finished, float &time) {
-    if (!inProgress.empty()) {
+void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector<TaskMapping> &finished, float &time,
+                                         vector<ReservationMapping> reservationMapping) {
+    vector<ReservationMapping> tmp;
+    std::copy_if(reservationMapping.begin(),
+                 reservationMapping.end(),
+                 std::back_inserter(tmp),
+                 [](ReservationMapping mapping) {
+                     return mapping.startTime != -1;
+                 });
+
+    if (((!inProgress.empty() && !tmp.empty()) &&
+         tmp.back().startTime <= inProgress.back().absoluteFinish)
+        || (!tmp.empty() && inProgress.empty())) {
+        time = tmp.back().startTime;
+    }
+    else if (!inProgress.empty()) {
         TaskMapping tM = inProgress.back();
         inProgress.pop_back();
 

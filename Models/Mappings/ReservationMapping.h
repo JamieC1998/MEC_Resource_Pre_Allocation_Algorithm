@@ -11,11 +11,11 @@
 struct TaskMapping;
 
 struct ReservationMapping {
-    TaskVertexData& task;
+    TaskVertexData* task;
     int nodeIndex;
     float finishTime;
     float startTime;
-    std::vector<TaskMapping*> parents;
+    std::vector<TaskMapping> parents;
     int parentCount;
 };
 

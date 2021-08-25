@@ -16,18 +16,18 @@ public:
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
             std::vector<ApplicationEvent> *applications, float current_time);
 
-    static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time);
+    static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time, std::vector<ReservationMapping> reservationQueue);
 
     static std::vector<TaskMapping> sortEventList(std::vector<TaskMapping> eventList);
 
     static std::pair<int, float> ChooseNode(
             std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-            Task &task, float current_time, NetworkTopology &topology, std::vector<TaskMapping *> parents,
+            Task &task, float current_time, NetworkTopology &topology, std::vector<TaskMapping> parents,
             float &startTime);
 
     static float calculateRunTime(Task &task, int source_node_index, int currentNodeIndex,
                                   std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-                                  float current_time, NetworkTopology &network, std::vector<TaskMapping *> parents,
+                                  float current_time, NetworkTopology &network, std::vector<TaskMapping> parents,
                                   float &startTime);
 
     static std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
@@ -76,6 +76,8 @@ public:
             float time,
             TaskMapping map,
             std::vector<TaskMapping> *inProgress);
+
+    static std::vector<ReservationMapping> sortReservations(std::vector<ReservationMapping> reservationMappings);
 };
 
 
