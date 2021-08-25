@@ -85,13 +85,13 @@ void NetworkTopologyServices::logInfo(NetworkTopology &network) {
     for (auto iter = vi.first; iter != vi.second; iter++) {
         node_type type = get(&NetworkVertexData::type, network)[(int) *iter];
         if (type == mobile)
-            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::mobileNode, network)[*iter].get().to_string()
+            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::mobileNode, network)[*iter]->to_string()
                  << endl;
         else if (type == node_type::edge)
-            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::edgeNode, network)[*iter].get().to_string()
+            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::edgeNode, network)[*iter]->to_string()
                  << endl;
         else if (type == cloud)
-            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::comp, network)[*iter].get().to_string()
+            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::comp, network)[*iter]->to_string()
                  << endl;
     }
 
@@ -109,9 +109,12 @@ void NetworkTopologyServices::logInfo(NetworkTopology &network) {
 }
 
 float NetworkTopologyServices::getBandwidth(int source, int destination, NetworkTopology& network){
-    property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
-    auto res = boost::edge(source, destination, network).first;
+    if(source == destination)
+        return 0;
 
+    property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
+
+    auto res = boost::edge(source, destination, network).first;
     return INT_MAX - get(weightMap, res);
 }
 
@@ -129,16 +132,34 @@ NetworkTopology NetworkTopologyServices::generateNetwork() {
     auto v5 = add_vertex({cloudNode.getType(), cloudNode, none, none}, g);
 
     add_edge(v1, v2, INT_MAX - 5, g);
-    add_edge(v1, v3, INT_MAX - 5, g);
-    add_edge(v1, v4, INT_MAX - 10, g);
-    add_edge(v1, v5, INT_MAX - 10, g);
-    add_edge(v2, v3, INT_MAX - 6, g);
-    add_edge(v2, v4, INT_MAX - 6, g);
-    add_edge(v2, v5, INT_MAX - 6, g);
-    add_edge(v3, v4, INT_MAX - 5, g);
-    add_edge(v3, v5, INT_MAX - 5, g);
-    add_edge(v4, v5, INT_MAX - 5, g);
+    add_edge(v2, v1, INT_MAX - 5, g);
 
+    add_edge(v1, v3, INT_MAX - 5, g);
+    add_edge(v3, v1, INT_MAX - 5, g);
+
+    add_edge(v1, v4, INT_MAX - 10, g);
+    add_edge(v4, v1, INT_MAX - 10, g);
+
+    add_edge(v1, v5, INT_MAX - 10, g);
+    add_edge(v5, v1, INT_MAX - 10, g);
+
+    add_edge(v2, v3, INT_MAX - 6, g);
+    add_edge(v3, v2, INT_MAX - 6, g);
+
+    add_edge(v2, v4, INT_MAX - 6, g);
+    add_edge(v4, v2, INT_MAX - 6, g);
+
+    add_edge(v2, v5, INT_MAX - 6, g);
+    add_edge(v5, v2, INT_MAX - 6, g);
+
+    add_edge(v3, v4, INT_MAX - 5, g);
+    add_edge(v4, v3, INT_MAX - 5, g);
+
+    add_edge(v3, v5, INT_MAX - 5, g);
+    add_edge(v5, v3, INT_MAX - 5, g);
+
+    add_edge(v4, v5, INT_MAX - 5, g);
+    add_edge(v5, v4, INT_MAX - 5, g);
 
     return g;
 }

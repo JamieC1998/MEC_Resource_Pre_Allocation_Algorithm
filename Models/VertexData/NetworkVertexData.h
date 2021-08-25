@@ -6,10 +6,10 @@
 #define FIRSTHOPMOBILEOFFLOADING_NETWORKVERTEXDATA_H
 
 #include <enums/NodeTypes.h>
-#include <Models/ComputationNode/ComputationNode.h>
 #include <Models/EdgeNode/EdgeNode.h>
 #include <Models/MobileNode/MobileNode.h>
 #include <boost/optional.hpp>
+#include <Models/ComputationNode/ComputationNode.h>
 
 struct NetworkVertexData {
     node_type type;

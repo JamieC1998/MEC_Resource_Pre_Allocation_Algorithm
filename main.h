@@ -7,13 +7,7 @@
 
 #include <Services/NetworkTopologyServices/NetworkTopologyServices.h>
 #include <Services/ApplicationTopologyServices/ApplicationTopologyServices.h>
-
-struct TaskMapping {
-    float absoluteStart = 0;
-    float absoluteFinish = 0;
-    std::reference_wrapper<TaskVertexData> task;
-    std::reference_wrapper<NetworkVertexData> node;
-};
+#include <Models/Mappings/TaskMapping.h>
 
 class main {
 public:

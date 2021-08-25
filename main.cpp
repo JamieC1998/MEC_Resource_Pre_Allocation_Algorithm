@@ -74,12 +74,12 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
             tM.task.get().task.get().setDone(true);
             tM.task.get().task.get().setInProgress(false);
 
-            if (tM.node.get().type == mobile)
-                tM.node.get().mobileNode->setIsFree(true);
-            else if (tM.node.get().type == cloud)
-                tM.node.get().comp->setIsFree(true);
-            else if (tM.node.get().type == node_type::edge)
-                tM.node.get().edgeNode->setIsFree(true);
+            if (tM.node->type == mobile)
+                tM.node->mobileNode->setIsFree(true);
+            else if (tM.node->type == cloud)
+                tM.node->comp->setIsFree(true);
+            else if (tM.node->type == node_type::edge)
+                tM.node->edgeNode->setIsFree(true);
 
             finished.push_back(tM);
         }
@@ -106,7 +106,7 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
                 selectedNode.edgeNode->setIsFree(false);
 
             float finish = time + main::calculateProcessingTime(selectedTask, selectedNode);
-            inProgress.push_back({time, finish, selectedTask, selectedNode});
+            inProgress.push_back({time, finish, selectedTask, &selectedNode});
         }
 
     }
@@ -122,12 +122,12 @@ void main::logResults(const vector<TaskMapping> &finished) {
         cout << i.task.get().task->to_string() << endl;
         cout << "VERTEX:" << endl;
 
-        if (i.node.get().type == cloud)
-            cout << i.node.get().comp->to_string();
-        else if (i.node.get().type == node_type::edge)
-            cout << i.node.get().edgeNode->to_string();
-        else if (i.node.get().type == mobile)
-            cout << i.node.get().mobileNode->to_string();
+        if (i.node->type == cloud)
+            cout << i.node->comp->to_string();
+        else if (i.node->type == node_type::edge)
+            cout << i.node->edgeNode->to_string();
+        else if (i.node->type == mobile)
+            cout << i.node->mobileNode->to_string();
 
         cout << endl << "START TIME: " << i.absoluteStart << endl;
         cout << "FINISH TIME: " << i.absoluteFinish << endl;

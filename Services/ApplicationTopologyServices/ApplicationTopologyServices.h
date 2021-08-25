@@ -2,12 +2,11 @@
 // Created by Jamie Cotter on 22/07/2021.
 //
 
-
-#include <Models/VertexData/TaskVertexData.h>
-#include <boost/graph/adjacency_list.hpp>
-
 #ifndef FIRSTHOPMOBILEOFFLOADING_APPLICATIONTOPOLOGYSERVICES_H
 #define FIRSTHOPMOBILEOFFLOADING_APPLICATIONTOPOLOGYSERVICES_H
+
+#include <boost/graph/adjacency_list.hpp>
+#include <Models/VertexData/TaskVertexData.h>
 
 using namespace boost;
 
