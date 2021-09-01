@@ -141,6 +141,7 @@ void main::logResults(const vector<TaskMapping> &finished, char* output_filename
         myfile << "FINISH TIME: " << i.absoluteFinish << endl;
     }
     myfile.close();
+    cout << output_filename;
 }
 
 /**
