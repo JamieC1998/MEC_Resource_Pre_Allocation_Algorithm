@@ -7,10 +7,14 @@
 #include <Services/ApplicationTopologyServices/ApplicationTopologyServices.h>
 #include <Services/SimulatorServices/SimulatorFunctions.h>
 #include <Services/FileReader/FileReader.h>
+#include <fstream>
 
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
+    char *input_file_name = argv[1];
+    char *output_file_name = argv[2];
+
     float completion_time = 20.0f;
 
     NetworkTopology network = NetworkTopologyServices::generateNetwork();
@@ -25,7 +29,7 @@ int main() {
         }
     }
 
-    auto parsedApplications = FileReader::parseApplications("../input_new.txt", &completion_time);
+    auto parsedApplications = FileReader::parseApplications(input_file_name, &completion_time);
     vector<ApplicationEvent> application_events;
 
     application_events.reserve(parsedApplications.size());
@@ -34,7 +38,7 @@ int main() {
         application_events.push_back(
                 {item.first, ApplicationTopologyServices::generateApplications(item, source_mobile_id)});
 
-    SimulatorFunctions::programLoop(network, application_events, completion_time);
+    SimulatorFunctions::programLoop(network, application_events, completion_time, output_file_name);
 
     return 0;
 }
@@ -111,27 +115,32 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
 
     }
 
-    main::logResults(finished);
+    char const * output = "../output_file.txt";
+    main::logResults(finished, const_cast<char *>(output));
 }
 
-void main::logResults(const vector<TaskMapping> &finished) {
-    cout << endl << "LOGGING MAPPING RESULTS:" << endl;
+void main::logResults(const vector<TaskMapping> &finished, char* output_filename) {
+    ofstream myfile;
+    myfile.open(output_filename);
+
+    myfile << endl << "LOGGING MAPPING RESULTS:" << endl;
     for (const auto &i : finished) {
-        cout << "====================" << endl;
-        cout << "TASK: " << endl;
-        cout << i.task.get().task->to_string() << endl;
-        cout << "VERTEX:" << endl;
+        myfile << "====================" << endl;
+        myfile << "TASK: " << endl;
+        myfile << i.task.get().task->to_string() << endl;
+        myfile << "VERTEX:" << endl;
 
         if (i.node->type == cloud)
-            cout << i.node->comp->to_string();
+            myfile << i.node->comp->to_string();
         else if (i.node->type == node_type::edge)
-            cout << i.node->edgeNode->to_string();
+            myfile << i.node->edgeNode->to_string();
         else if (i.node->type == mobile)
-            cout << i.node->mobileNode->to_string();
+            myfile << i.node->mobileNode->to_string();
 
-        cout << endl << "START TIME: " << i.absoluteStart << endl;
-        cout << "FINISH TIME: " << i.absoluteFinish << endl;
+        myfile << endl << "START TIME: " << i.absoluteStart << endl;
+        myfile << "FINISH TIME: " << i.absoluteFinish << endl;
     }
+    myfile.close();
 }
 
 /**

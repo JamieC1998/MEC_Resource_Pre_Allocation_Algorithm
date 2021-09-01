@@ -456,7 +456,7 @@ vector<ReservationMapping> SimulatorFunctions::sortReservations(vector<Reservati
 }
 
 void SimulatorFunctions::programLoop(NetworkTopology &network, vector<ApplicationEvent> incoming_applications,
-                                     float completion_time) {
+                                     float completion_time, char* output_file_name) {
     int total_task_count = 0;
 
     for (auto &incoming_application : incoming_applications)
@@ -509,7 +509,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
         SimulatorFunctions::checkIncomingApplications(&total_task_lists, &incoming_applications, time);
     }
 
-    main::logResults(finished);
+    main::logResults(finished, output_file_name);
 }
 
 /**
