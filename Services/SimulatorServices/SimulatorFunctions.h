@@ -14,7 +14,7 @@ public:
     static bool isValidNode(const Task &task, const NetworkVertexData &vt);
 
     static void
-    programLoop(NetworkTopology &network, std::vector<ApplicationEvent> incoming_applications, float completion_time);
+    programLoop(NetworkTopology &network, std::vector<ApplicationEvent> incoming_applications, float completion_time, char* output_file_name);
 
     static void checkIncomingApplications(
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,

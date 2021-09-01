@@ -25,7 +25,7 @@ public:
 
     static float calculateProcessingTime(TaskVertexData task, NetworkVertexData node);
 
-    static void logResults(const std::vector<TaskMapping> &finished);
+    static void logResults(const std::vector<TaskMapping> &finished, char* output_file_name);
 };
 
 
