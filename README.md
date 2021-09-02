@@ -1,1 +1,1 @@
-# First_Hop_Mobile_Offloading_Sim
+# MEC_Resource_Pre_Allocation_Algorithm
