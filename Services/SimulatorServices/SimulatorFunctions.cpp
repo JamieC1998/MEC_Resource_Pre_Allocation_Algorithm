@@ -489,7 +489,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
         reservationQueue = SimulatorFunctions::sortReservations(reservationQueue);
 
         //Moving to the next event
-        SimulatorFunctions::UpdateEventList(inProgress, finished, time, reservationQueue);
+        SimulatorFunctions::UpdateEventList(inProgress, finished, time, reservationQueue, completion_time);
 
         SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time,
                                          reservationQueue);
@@ -545,7 +545,7 @@ void SimulatorFunctions::checkIncomingApplications(
  * @param time - A reference to the current time of the application to be updated with the current event finish time
  */
 void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector<TaskMapping> &finished, float &time,
-                                         vector<ReservationMapping> reservationMapping) {
+                                         vector<ReservationMapping> reservationMapping, float completion_time) {
     vector<ReservationMapping> tmp;
     std::copy_if(reservationMapping.begin(),
                  reservationMapping.end(),
@@ -561,6 +561,10 @@ void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector
     }
     else if (!inProgress.empty()) {
         TaskMapping tM = inProgress.back();
+        if(tM.absoluteFinish > completion_time){
+            time = completion_time;
+            return;
+        }
         inProgress.pop_back();
 
         time = tM.absoluteFinish;
