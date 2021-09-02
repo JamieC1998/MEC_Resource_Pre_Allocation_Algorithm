@@ -20,7 +20,7 @@ public:
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
             std::vector<ApplicationEvent> *applications, float current_time);
 
-    static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time);
+    static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time, float completion_time);
 
     static std::vector<TaskMapping> sortEventList(std::vector<TaskMapping> eventList);
 

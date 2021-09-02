@@ -245,7 +245,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
         inProgress = SimulatorFunctions::sortEventList(inProgress);
 
         //Moving to the next event
-        SimulatorFunctions::UpdateEventList(inProgress, finished, time);
+        SimulatorFunctions::UpdateEventList(inProgress, finished, time, completion_time);
 
         SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time);
 
@@ -299,9 +299,13 @@ void SimulatorFunctions::checkIncomingApplications(
  * @param finished - A reference to a vector that contains task mappings that are completed
  * @param time - A reference to the current time of the application to be updated with the current event finish time
  */
-void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector<TaskMapping> &finished, float &time) {
+void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector<TaskMapping> &finished, float &time, float completion_time) {
     if (!inProgress.empty()) {
         TaskMapping tM = inProgress.back();
+        if(tM.absoluteFinish > completion_time){
+            time = completion_time;
+            return;
+        }
         inProgress.pop_back();
 
         time = tM.absoluteFinish;
