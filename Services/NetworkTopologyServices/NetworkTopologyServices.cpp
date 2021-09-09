@@ -116,17 +116,19 @@ float NetworkTopologyServices::getBandwidth(int source, int destination, Network
 }
 
 NetworkTopology NetworkTopologyServices::generateNetwork() {
-    ComputationNode cloudNode(4, 15, 128, 1000, cloud);
+    ComputationNode cloudNodeA(4, 15, 128, 1000, cloud);
     EdgeNode edgeNode(1, 10, 8, 250, node_type::edge, make_pair(1, 1));
     MobileNode mobileNode(4, 4, 8, 16, mobile, make_pair(2, 2));
+    ComputationNode cloudNodeB(4, 15, 128, 1000, cloud);
+    ComputationNode cloudNodeC(4, 15, 128, 1000, cloud);
 
     NetworkTopology g;
 
     auto v1 = add_vertex({mobileNode.getType(), none, none, mobileNode}, g);
     auto v2 = add_vertex({edgeNode.getType(), none, edgeNode, none}, g);
-    auto v3 = add_vertex({cloudNode.getType(), cloudNode, none, none}, g);
-    auto v4 = add_vertex({cloudNode.getType(), cloudNode, none, none}, g);
-    auto v5 = add_vertex({cloudNode.getType(), cloudNode, none, none}, g);
+    auto v3 = add_vertex({cloudNodeA.getType(), cloudNodeA, none, none}, g);
+    auto v4 = add_vertex({cloudNodeB.getType(), cloudNodeB, none, none}, g);
+    auto v5 = add_vertex({cloudNodeC.getType(), cloudNodeC, none, none}, g);
 
     add_edge(v1, v2, INT_MAX - 5, g);
     add_edge(v1, v3, INT_MAX - 5, g);
