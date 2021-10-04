@@ -22,32 +22,84 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
     ComputationNode node = (vt.type == mobile) ? vt.mobileNode.get() : (vt.type == cloud) ? vt.comp.get()
                                                                                           : vt.edgeNode.get();
 
-    float total_ram_usage = 0.0f;
-    float total_storage_usage = 0.0f;
-    int total_cores_used = 0;
+    struct ResourceEvent {
+        int cpu_usage;
+        float ram_usage;
+        float storage;
+
+        bool is_increase;
+        float time;
+    };
+
+    vector<ResourceEvent> resource_events;
 
     for (const auto &item: node.getReservations()) {
         Task tempTask = item.task;
         if (timeWindow.first <= item.timeWindow.second && item.timeWindow.first <= timeWindow.second) {
-            total_ram_usage += item.task.getRam();
-            total_storage_usage += item.task.getStorage();
-            total_cores_used += item.task.getCoreCount();
+            for (int i = 0; i < 2; i++) {
+                resource_events.push_back({
+                                                  tempTask.getCoreCount(),
+                                                  tempTask.getRam(),
+                                                  tempTask.getStorage(),
+                                                  (bool) i,
+                                                  ((bool) i) ? (item.timeWindow.first < timeWindow.first)
+                                                               ? timeWindow.first : item.timeWindow.first
+                                                             : (item.timeWindow.second > timeWindow.second)
+                                                               ? timeWindow.second : item.timeWindow.second
+                                          });
+            }
         }
     }
-
-    total_ram_usage = 0.0f;
-    total_storage_usage = 0.0f;
-    total_cores_used = 0;
 
     for (const auto &item: node.getTaskVector()) {
+        Task tempTask = item.task;
         if (timeWindow.first <= item.timeWindow.second && item.timeWindow.first <= timeWindow.second) {
-            total_ram_usage += item.task.getRam();
-            total_storage_usage += item.task.getStorage();
-            total_cores_used += item.task.getCoreCount();
+            for (int i = 0; i < 2; i++) {
+                resource_events.push_back({
+                                                  tempTask.getCoreCount(),
+                                                  tempTask.getRam(),
+                                                  tempTask.getStorage(),
+                                                  (bool) i,
+                                                  ((bool) i) ? (item.timeWindow.first < timeWindow.first)
+                                                               ? timeWindow.first : item.timeWindow.first
+                                                             : (item.timeWindow.second > timeWindow.second)
+                                                               ? timeWindow.second : item.timeWindow.second
+                                          });
+            }
         }
     }
 
+    sort(std::begin(resource_events), std::end(resource_events),
+         [](const ResourceEvent &a, const ResourceEvent &b) -> bool {
+             return a.time < b.time;
+         });
 
+    float max_ram_usage = 0;
+    float max_storage_usage = 0;
+    int max_core_usage = 0;
+
+    float current_ram_usage = 0;
+    float current_storage_usage = 0;
+    int current_core_usage = 0;
+
+    for (const auto &resource_event: resource_events) {
+        if (resource_event.is_increase) {
+            current_core_usage += resource_event.cpu_usage;
+            current_storage_usage += resource_event.storage;
+            current_ram_usage += resource_event.ram_usage;
+
+            if (current_core_usage > max_core_usage)
+                max_core_usage = current_core_usage;
+            if (current_ram_usage > max_ram_usage)
+                max_ram_usage = current_ram_usage;
+            if (current_storage_usage > max_storage_usage)
+                max_storage_usage = current_storage_usage;
+        } else {
+            current_core_usage -= resource_event.cpu_usage;
+            current_storage_usage -= resource_event.storage;
+            current_ram_usage -= resource_event.ram_usage;
+        }
+    }
 
     //If the node must be processed locally, we check if this is the source node.
     if (!task.isOffload() && vt.type == mobile) {
@@ -55,11 +107,11 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
             return false;
 
         else {
-            if ((total_ram_usage + task.getRam()) > node.getRam())
+            if ((max_ram_usage + task.getRam()) > node.getRam())
                 return false;
-            if ((total_storage_usage + task.getStorage()) > node.getStorage())
+            if ((max_storage_usage + task.getStorage()) > node.getStorage())
                 return false;
-            if ((total_cores_used + task.getCoreCount()) > node.getCores())
+            if ((max_core_usage + task.getCoreCount()) > node.getCores())
                 return false;
         }
     }
@@ -71,11 +123,11 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
 
         //Checking if it meets the resource requirements
     else {
-        if ((total_ram_usage + task.getRam()) > node.getRam())
+        if ((max_ram_usage + task.getRam()) > node.getRam())
             return false;
-        if ((total_storage_usage + task.getStorage()) > node.getStorage())
+        if ((max_storage_usage + task.getStorage()) > node.getStorage())
             return false;
-        if ((total_cores_used + task.getCoreCount()) > node.getCores())
+        if ((max_core_usage + task.getCoreCount()) > node.getCores())
             return false;
     }
     return true;
@@ -174,26 +226,31 @@ float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, in
     return rt_local + ot_up;
 }
 
-void SimulatorFunctions::processReadyTasks(
-        vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *readyTaskList,
+vector<pair<int, int>> SimulatorFunctions::processReadyTasks(
+        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *> &readyTaskList,
         vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_lists) {
     //Emptying the task list
-    readyTaskList->clear();
+    readyTaskList.clear();
 
     //Iterating through each application queue
     for (auto &taskList: *total_task_lists) {
         auto tempRes = SimulatorFunctions::getReadyTasks(taskList);
-        readyTaskList->insert(std::end(*readyTaskList), std::begin(tempRes), std::end(tempRes));
+        readyTaskList.insert(std::end(readyTaskList), std::begin(tempRes), std::end(tempRes));
     }
 
-    //Sorting readyTasks to prioritise tasks that cannot be offloaded
-    std::sort(readyTaskList->begin(), readyTaskList->end(),
-              [](std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> a,
-                 std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> b) {
 
-                  return !a.get().m_property.task.get().isOffload();
-              });
+    vector<pair<int, int>> tvd;
+    tvd.reserve(readyTaskList.size());
 
+    for (int i = 0; i < readyTaskList.size(); i++) {
+        tvd.emplace_back(i, readyTaskList[i]->m_property.task.get().isOffload());
+    }
+
+    std::sort(tvd.begin(), tvd.end(), [](pair<int, int> a, pair<int, int> b) {
+        return a < b;
+    });
+
+    return tvd;
 }
 
 int
@@ -233,7 +290,7 @@ void SimulatorFunctions::taskMapping(
         auto &reservedTask = reservationQueue[result];
 
         // If our reservation isn't ready
-        if(reservedTask.startTime != time)
+        if (reservedTask.startTime != time)
             return;
 
         nodeIndex = reservationQueue[result].nodeIndex;
@@ -311,17 +368,15 @@ void SimulatorFunctions::preallocateTasks(
     auto outGoingTasks = SimulatorFunctions::getOutGoingTasks(total_task_lists, selectedTask);
 
     for (auto &outGoingTask : outGoingTasks) {
-
         int index = -1;
         for (int i = 0; i < reservationQueue.size(); i++) {
             if (reservationQueue[i].task->task->getId() == outGoingTask->m_property.task->getId()) {
                 index = i;
             }
         }
-
-        if (index != -1)
+        if (index != -1) {
             reservationQueue[index].parents.push_back(map);
-        else {
+        } else {
             std::vector<TaskMapping> parents;
             parents.push_back(map);
 
@@ -334,7 +389,9 @@ void SimulatorFunctions::preallocateTasks(
             index = reservationQueue.size() - 1;
         }
         if (reservationQueue[index].parents.size() == reservationQueue[index].parentCount) {
+
             float startTime = 0.0f;
+
             auto chooseNode = SimulatorFunctions::ChooseNode(networkVertexList, outGoingTask->m_property.task.get(),
                                                              map.absoluteStart,
                                                              network, reservationQueue[index].parents,
@@ -344,42 +401,31 @@ void SimulatorFunctions::preallocateTasks(
             //Then we must attempt preallocate, fast forwarding through the state of the network till
             //a node can be preallocated.
             if (chooseNode.first == -1) {
-                for (int i = 0; i < inProgress->size(); i++) {
-                    if (reservationQueue[index].parents[reservationQueue[index].parents.size() - 1].absoluteStart >=
-                        ((vector<TaskMapping>) *inProgress)[i].absoluteFinish)
-                        continue;
+                vector<float> finish_times;
 
+                float parent_start_time = reservationQueue[index].parents[reservationQueue[index].parents.size() -
+                                                                          1].absoluteStart;
+                for (const auto &item: *inProgress) {
+                    if (parent_start_time <= item.absoluteFinish)
+                        finish_times.push_back(item.absoluteFinish + 0.0001f);
+                }
+
+                for (const auto &item: reservationQueue) {
+                    if (parent_start_time <= item.finishTime && item.finishTime != -1)
+                        finish_times.push_back(item.finishTime + 0.0001f);
+                }
+
+                std::sort(finish_times.begin(), finish_times.end());
+
+                for (const float f_time: finish_times) {
                     startTime = 0.0f;
-                    chooseNode = SimulatorFunctions::ChooseNode(networkVertexList, outGoingTask->m_property.task.get(),
-                                                                ((vector<TaskMapping>) *inProgress)[i].absoluteFinish +
-                                                                0.0001f,
+                    chooseNode = SimulatorFunctions::ChooseNode(networkVertexList,
+                                                                outGoingTask->m_property.task.get(),
+                                                                f_time,
                                                                 network, reservationQueue[index].parents,
                                                                 startTime);
-
                     if (chooseNode.first != -1)
                         break;
-                }
-                if (chooseNode.first == -1) {
-                    for (int i = 0; i < reservationQueue.size(); i++) {
-                        if (reservationQueue[index].task->task->getId() == reservationQueue[i].task->task->getId())
-                            continue;
-
-                        if (reservationQueue[index].parents[reservationQueue[index].parents.size() -
-                                                            1].absoluteStart >=
-                            reservationQueue[i].finishTime)
-                            continue;
-
-                        startTime = 0.0f;
-                        chooseNode = SimulatorFunctions::ChooseNode(networkVertexList, outGoingTask->m_property.task.get(),
-                                                                    ((vector<TaskMapping>) *inProgress)[i].absoluteFinish +
-                                                                    0.0001f,
-                                                                    network, reservationQueue[index].parents,
-                                                                    startTime);
-
-                        if(chooseNode.first != -1)
-                            break;
-
-                    }
                 }
             }
 
@@ -390,13 +436,13 @@ void SimulatorFunctions::preallocateTasks(
                                       ? networkVertexList[chooseNode.first].m_property.comp.get()
                                       : networkVertexList[chooseNode.first].m_property.edgeNode.get();
 
-            ReservationMapping &reservationItem = reservationQueue[index];
-            reservationItem.startTime = startTime;
-            reservationItem.finishTime = chooseNode.second;
-            reservationItem.nodeIndex = chooseNode.first;
+            reservationQueue[index].startTime = startTime;
+            reservationQueue[index].finishTime = chooseNode.second;
+            reservationQueue[index].nodeIndex = chooseNode.first;
 
             vector<NodeMapping> nodeReservations = node.getReservations();
-            nodeReservations.push_back({reservationItem.task->task.get(), make_pair(startTime, chooseNode.second)});
+            nodeReservations.push_back(
+                    {reservationQueue[index].task->task.get(), make_pair(startTime, chooseNode.second)});
             node.setReservations(nodeReservations);
         }
     }
@@ -423,7 +469,7 @@ SimulatorFunctions::getOutGoingTasks(
 }
 
 void SimulatorFunctions::runAlgorithm(
-        vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
+        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
         &readyTaskList,
         vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
         &total_task_lists,
@@ -434,13 +480,12 @@ void SimulatorFunctions::runAlgorithm(
         float time,
         vector<ReservationMapping> &reservationQueue) {
 
-    SimulatorFunctions::processReadyTasks(&readyTaskList, &total_task_lists);
+    vector<pair<int,int>> order = SimulatorFunctions::processReadyTasks(readyTaskList, &total_task_lists);
 
-    int task_count = ((int) readyTaskList.size());
+    int task_count = ((int) order.size());
 
     for (int i = 0; i < task_count; i++) {
-        TaskVertexData &selectedTask = readyTaskList.back().get().m_property;
-        readyTaskList.pop_back();
+        TaskVertexData &selectedTask = readyTaskList[order[i].first]->m_property;
 
         SimulatorFunctions::taskMapping(time, network, &inProgress, selectedTask, networkVertexList, reservationQueue,
                                         total_task_lists);
@@ -456,7 +501,7 @@ vector<ReservationMapping> SimulatorFunctions::sortReservations(vector<Reservati
 }
 
 void SimulatorFunctions::programLoop(NetworkTopology &network, vector<ApplicationEvent> incoming_applications,
-                                     float completion_time, char* output_file_name) {
+                                     float completion_time, char *output_file_name, char *lower_bound_file_name) {
     int total_task_count = 0;
 
     for (auto &incoming_application : incoming_applications)
@@ -470,9 +515,10 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
 
     //Retrieving the list of vertices and their edges(in & out) in both our generated application and our network
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
+    int super_node_MI = NetworkTopologyServices::getSuperNodeMI(networkVertexList);
 
     //Will hold the tasks ready to be offloaded in each loop
-    vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
+    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
             readyTaskList;
 
     //Contains a list of tasks mapped to nodes currently computing
@@ -483,33 +529,26 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
 
     vector<ReservationMapping> reservationQueue;
 
+    vector<float> lower_bound_application_times;
+
     while (!(time >= completion_time || (finished.size() == total_task_count && incoming_applications.empty()))) {
         //Sorting the current event list from most recent to oldest time
         inProgress = SimulatorFunctions::sortEventList(inProgress);
         reservationQueue = SimulatorFunctions::sortReservations(reservationQueue);
 
         //Moving to the next event
-        SimulatorFunctions::UpdateEventList(inProgress, finished, time, reservationQueue, completion_time);
+        SimulatorFunctions::UpdateEventList(inProgress, finished, time, reservationQueue, completion_time,
+                                            &incoming_applications);
+
+        SimulatorFunctions::checkIncomingApplications(&total_task_lists, &incoming_applications, time,
+                                                      lower_bound_application_times, super_node_MI);
 
         SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time,
                                          reservationQueue);
-
-        /**
-         * If there are no tasks in progress and no tasks ready, that means that
-         * we are waiting for the next application to enter
-         */
-        if (inProgress.empty() && readyTaskList.empty() && !incoming_applications.empty()) {
-            auto min_time = (float) INT_MAX;
-            for (auto &incoming_application : incoming_applications) {
-                if (incoming_application.ready_time < min_time)
-                    min_time = incoming_application.ready_time;
-            }
-            time = min_time;
-        }
-        SimulatorFunctions::checkIncomingApplications(&total_task_lists, &incoming_applications, time);
     }
 
     main::logResults(finished, output_file_name);
+    main::logLowerBoundTimes(lower_bound_application_times, lower_bound_file_name);
 }
 
 /**
@@ -523,12 +562,16 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
 void SimulatorFunctions::checkIncomingApplications(
         vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
         vector<ApplicationEvent> *applications,
-        float current_time) {
+        float current_time, vector<float> &lower_bound_time,
+        int super_node_MI) {
 
     vector<ApplicationEvent> &incoming_application = *applications;
     for (int i = 0; i < incoming_application.size(); i++) {
         if (incoming_application[i].ready_time <= current_time) {
-            total_task_list->push_back(ApplicationTopologyServices::getVertices(incoming_application[i].application));
+            auto application_tasks = ApplicationTopologyServices::getVertices(incoming_application[i].application);
+
+            lower_bound_time.push_back(ApplicationTopologyServices::calculateLowerBound(application_tasks, 10));
+            total_task_list->push_back(application_tasks);
             incoming_application.erase(incoming_application.begin() + i);
             i = i - 1;
         }
@@ -545,23 +588,47 @@ void SimulatorFunctions::checkIncomingApplications(
  * @param time - A reference to the current time of the application to be updated with the current event finish time
  */
 void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector<TaskMapping> &finished, float &time,
-                                         vector<ReservationMapping> reservationMapping, float completion_time) {
-    vector<ReservationMapping> tmp;
+                                         vector<ReservationMapping> reservationMapping, float completion_time,
+                                         vector<ApplicationEvent> *applications) {
+    vector<ApplicationEvent> &incoming_applications = *applications;
+    /**
+         * If there are no tasks in progress and no tasks ready, that means that
+         * we are waiting for the next application to enter
+         */
+    //        if (inProgress.empty() && readyTaskList.empty() && !incoming_applications.empty()) {
+    auto app_min_time = (float) INT_MAX;
+    bool app_chosen = false;
+    if (!incoming_applications.empty()) {
+        for (auto &incoming_application : incoming_applications) {
+            if (incoming_application.ready_time < app_min_time) {
+                app_min_time = incoming_application.ready_time;
+                app_chosen = true;
+            }
+        }
+    }
+
+    vector<ReservationMapping> sortedReservationMappings;
     std::copy_if(reservationMapping.begin(),
                  reservationMapping.end(),
-                 std::back_inserter(tmp),
-                 [](ReservationMapping mapping) {
+                 std::back_inserter(sortedReservationMappings),
+                 [](const ReservationMapping &mapping) {
                      return mapping.startTime != -1;
                  });
 
-    if (((!inProgress.empty() && !tmp.empty()) &&
-         tmp.back().startTime <= inProgress.back().absoluteFinish)
-        || (!tmp.empty() && inProgress.empty())) {
-        time = tmp.back().startTime;
-    }
-    else if (!inProgress.empty()) {
+    if (((!inProgress.empty() && !sortedReservationMappings.empty()) &&
+         sortedReservationMappings.back().startTime <= inProgress.back().absoluteFinish)
+        || (!sortedReservationMappings.empty() && inProgress.empty())) {
+        float finish_time = sortedReservationMappings.back().startTime;
+        if (app_chosen && app_min_time < finish_time) time = app_min_time;
+        else time = finish_time;
+    } else if (!inProgress.empty()) {
         TaskMapping tM = inProgress.back();
-        if(tM.absoluteFinish > completion_time){
+        if (app_chosen && app_min_time < tM.absoluteFinish) {
+            if (app_min_time > completion_time) time = completion_time;
+            else time = app_min_time;
+            return;
+        }
+        if (tM.absoluteFinish > completion_time) {
             time = completion_time;
             return;
         }
@@ -588,6 +655,8 @@ void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector
                 node.getTaskVector().begin() + task_index_to_rem);
 
         finished.push_back(tM);
+    } else if (app_chosen) {
+        time = app_min_time;
     }
 }
 
@@ -604,18 +673,18 @@ vector<TaskMapping> SimulatorFunctions::sortEventList(vector<TaskMapping> eventL
  * @param taskList - The list of tasks that represent all the vertices in an application
  * @return - A vector containing only the tasks ready to be offloaded
  */
-vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
+vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
 SimulatorFunctions::getReadyTasks(
         vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList) {
 
-    vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> res;
+    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *> res;
     for (auto &vertex : taskList) {
         Task &tempTask = vertex.m_property.task.get();
         if (!vertex.m_property.task->isDone() && !vertex.m_property.task->isInProgress()) {
             //If a task depends on no other tasks and is not in progress or completed
             // then it is ready to be offloaded
             if (vertex.m_in_edges.empty()) {
-                res.emplace_back(vertex);
+                res.emplace_back(&vertex);
                 continue;
             } else {
                 bool ready = true;
@@ -628,7 +697,7 @@ SimulatorFunctions::getReadyTasks(
                     }
                 }
                 if (ready)
-                    res.emplace_back(vertex);
+                    res.emplace_back(&vertex);
             }
         }
     }

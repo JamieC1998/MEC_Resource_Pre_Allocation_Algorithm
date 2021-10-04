@@ -5,8 +5,23 @@
 #include "ApplicationTopologyServices.h"
 #include <boost/graph/adjacency_list.hpp>
 #include <Models/Task/Task.h>
+#include <stack>
 
 using namespace std;
+
+struct CriticalPathItem {
+    int id;
+    int index;
+
+    float est;
+    float lst;
+    float eet;
+    float let;
+    vector<int> children;
+    vector<int> parents;
+
+    unsigned long long MI;
+};
 
 ApplicationTopology ApplicationTopologyServices::generateApplications(
         std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
@@ -29,6 +44,85 @@ ApplicationTopology ApplicationTopologyServices::generateApplications(
     }
 
     return a;
+}
+
+void topologicalSort(int curr, vector<bool> visited, stack<int> &sorted_topology, vector<vector<int>> adjacency) {
+    visited[curr] = true;
+
+    for (int i = 0; i < adjacency[curr].size(); ++i)
+        if (!visited[i]) topologicalSort(i, visited, sorted_topology, adjacency);
+
+    sorted_topology.push(curr);
+}
+
+vector<CriticalPathItem> EarliestMetricCalculator(vector<CriticalPathItem> critical_path_items) {
+    critical_path_items[0].eet = critical_path_items[0].eet + critical_path_items[0].MI;
+
+    for (int i = 1; i < critical_path_items.size(); i++) {
+        for (int cpm_item: critical_path_items[i].parents) {
+            if (critical_path_items[i].est < critical_path_items[cpm_item].eet)
+                critical_path_items[i].est = critical_path_items[cpm_item].eet;
+        }
+
+        critical_path_items[i].eet = critical_path_items[i].est + critical_path_items[i].MI;
+    }
+
+    return critical_path_items;
+}
+
+vector<CriticalPathItem> LatestMetricCalculator(vector<CriticalPathItem> critical_path_items) {
+
+    critical_path_items[critical_path_items.size() - 1].let = critical_path_items[critical_path_items.size() - 1].eet;
+    critical_path_items[critical_path_items.size() - 1].lst = critical_path_items[critical_path_items.size() - 1].let -
+                                                              critical_path_items[critical_path_items.size() - 1].MI;
+
+    for (int i = critical_path_items.size() - 2; i >= 0; i--) {
+        for (int cpm_item: critical_path_items[i].children) {
+            if (critical_path_items[i].let == 0)
+                critical_path_items[i].let = critical_path_items[cpm_item].lst;
+            else if (critical_path_items[i].let > critical_path_items[cpm_item].lst)
+                critical_path_items[i].let = critical_path_items[cpm_item].lst;
+        }
+
+        critical_path_items[i].lst = critical_path_items[i].let - critical_path_items[i].MI;
+    }
+
+    return critical_path_items;
+}
+
+float total_path_time(vector<CriticalPathItem> critical_path_list) {
+    int total_path_MI = 0;
+    for (CriticalPathItem cp_item: critical_path_list) {
+        if ((cp_item.eet - cp_item.let == 0) && (cp_item.est - cp_item.lst == 0))
+            total_path_MI += cp_item.MI;
+    }
+
+    return total_path_MI;
+}
+
+float ApplicationTopologyServices::calculateLowerBound(
+        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList,
+        int super_node_MI) {
+
+    vector<CriticalPathItem> critical_path_list;
+
+    for (int i = 0; i < taskList.size(); i++) {
+        vector<int> children;
+        vector<int> parents;
+        for (const auto &item: taskList[i].m_in_edges)
+            parents.push_back(item.m_target);
+
+        for (const auto &item: taskList[i].m_out_edges)
+            children.push_back(item.m_target);
+
+        critical_path_list.push_back({taskList[i].m_property.task.get().getId(), i, 0, 0, 0, 0, children, parents,
+                                      taskList[i].m_property.task.get().getMillionsOfInstructions()});
+    }
+
+    critical_path_list = EarliestMetricCalculator(critical_path_list);
+    critical_path_list = LatestMetricCalculator(critical_path_list);
+    float total_time = critical_path_list[critical_path_list.size() - 1].eet / super_node_MI;
+    return total_time;
 }
 
 ApplicationTopology ApplicationTopologyServices::generateNavigator(int source_mobile_id) {

@@ -10,13 +10,17 @@ public:
     static bool isValidNode(const Task &task, const NetworkVertexData &vt, std::pair<float, float> timeWindow);
 
     static void
-    programLoop(NetworkTopology &network, std::vector<ApplicationEvent> incoming_applications, float completion_time, char* output_file);
+    programLoop(NetworkTopology &network, std::vector<ApplicationEvent> incoming_applications, float completion_time,
+                char *output_file, char *lower_bound_file_name);
 
     static void checkIncomingApplications(
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
-            std::vector<ApplicationEvent> *applications, float current_time);
+            std::vector<ApplicationEvent> *applications, float current_time, std::vector<float> &lower_bound_times,
+            int super_node_MI);
 
-    static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time, std::vector<ReservationMapping> reservationQueue, float completion_time);
+    static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time,
+                                std::vector<ReservationMapping> reservationQueue, float completion_time,
+                                std::vector<ApplicationEvent> *applications);
 
     static std::vector<TaskMapping> sortEventList(std::vector<TaskMapping> eventList);
 
@@ -30,12 +34,12 @@ public:
                                   float current_time, NetworkTopology &network, std::vector<TaskMapping> parents,
                                   float &startTime);
 
-    static std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
+    static std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
     getReadyTasks(
             std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList);
 
-    static void processReadyTasks(
-            std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *readyTaskList,
+    static std::vector<std::pair<int, int>> processReadyTasks(
+            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *> &readyTaskList,
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_lists);
 
     static void taskMapping(
@@ -49,7 +53,7 @@ public:
             &total_task_lists);
 
     static void runAlgorithm(
-            std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
+            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
             &readyTaskList,
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
             std::vector<TaskMapping> &inProgress,

@@ -14,6 +14,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
     char *input_file_name = argv[1];
     char *output_file_name = argv[2];
+    char *lower_bound_file_name = argv[3];
 
     float completion_time = 20.0f;
 
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]) {
         application_events.push_back(
                 {item.first, ApplicationTopologyServices::generateApplications(item, source_mobile_id)});
 
-    SimulatorFunctions::programLoop(network, application_events, completion_time, output_file_name);
+    SimulatorFunctions::programLoop(network, application_events, completion_time, output_file_name, lower_bound_file_name);
 
     return 0;
 }
@@ -49,7 +50,7 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
 
     //Will hold the tasks ready to be offloaded in each loop
-    vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
+    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex*>
             readyTaskList;
 
     //Will hold the nodes ready to be offloaded in each loop
@@ -94,7 +95,7 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
         int count = (readyTaskList.size() < readyNodeList.size()) ? readyTaskList.size() : readyNodeList.size();
 
         for (int i = 0; i < count; i++) {
-            auto &selectedTask = readyTaskList.back().get().m_property;
+            auto &selectedTask = readyTaskList.back()->m_property;
             readyTaskList.pop_back();
 
             auto &selectedNode = readyNodeList.back().get().m_property;
@@ -117,6 +118,16 @@ void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator)
 
     char const * output = "../output_file.txt";
     main::logResults(finished, const_cast<char *>(output));
+}
+
+void main::logLowerBoundTimes(vector<float> lower_bound_application_times, std::string output_file_name){
+    ofstream myfile;
+    myfile.open(output_file_name);
+
+    for(float lb: lower_bound_application_times)
+        myfile << lb << endl;
+
+    myfile.close();
 }
 
 void main::logResults(const vector<TaskMapping> &finished, char* output_filename) {

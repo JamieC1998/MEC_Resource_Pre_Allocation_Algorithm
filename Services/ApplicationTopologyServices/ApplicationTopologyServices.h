@@ -37,6 +37,8 @@ public:
     static ApplicationTopology generateApplications(
             std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
             int source_mobile_id);
+
+    static float calculateLowerBound(std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList, int super_node_MI);
 };
 
 

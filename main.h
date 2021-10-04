@@ -20,6 +20,8 @@ public:
     static float calculateProcessingTime(TaskVertexData task, NetworkVertexData node);
 
     static void logResults(const std::vector<TaskMapping> &finished, char* output_filename);
+
+    static void logLowerBoundTimes(std::vector<float> lower_bound_application_times, std::string output_file_name);
 };
 
 

@@ -178,3 +178,16 @@ NetworkTopologyServices::getVertices(NetworkTopology &network) {
 
     return res;
 }
+
+int NetworkTopologyServices::getSuperNodeMI(std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> networkVertexList) {
+    int res = 0;
+
+    for(auto vert: networkVertexList){
+        ComputationNode &node = (vert.m_property.type == mobile) ? vert.m_property.mobileNode.get() : (vert.m_property.type ==
+                cloud)
+                        ? vert.m_property.comp.get()
+                        : vert.m_property.edgeNode.get();
+        res += node.getMillionsInstructionsPerCore();
+    }
+    return res;
+}
