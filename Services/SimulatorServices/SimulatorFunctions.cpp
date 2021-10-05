@@ -226,7 +226,7 @@ float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, in
     return rt_local + ot_up;
 }
 
-vector<pair<int, int>> SimulatorFunctions::processReadyTasks(
+vector<pair<int, bool>> SimulatorFunctions::processReadyTasks(
         vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *> &readyTaskList,
         vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_lists) {
     //Emptying the task list
@@ -239,15 +239,15 @@ vector<pair<int, int>> SimulatorFunctions::processReadyTasks(
     }
 
 
-    vector<pair<int, int>> tvd;
+    vector<pair<int, bool>> tvd;
     tvd.reserve(readyTaskList.size());
 
     for (int i = 0; i < readyTaskList.size(); i++) {
         tvd.emplace_back(i, readyTaskList[i]->m_property.task.get().isOffload());
     }
 
-    std::sort(tvd.begin(), tvd.end(), [](pair<int, int> a, pair<int, int> b) {
-        return a < b;
+    std::sort(tvd.begin(), tvd.end(), [](pair<int, bool> a, pair<int, bool> b) {
+        return a.second > b.second;
     });
 
     return tvd;
@@ -480,7 +480,7 @@ void SimulatorFunctions::runAlgorithm(
         float time,
         vector<ReservationMapping> &reservationQueue) {
 
-    vector<pair<int,int>> order = SimulatorFunctions::processReadyTasks(readyTaskList, &total_task_lists);
+    vector<pair<int,bool>> order = SimulatorFunctions::processReadyTasks(readyTaskList, &total_task_lists);
 
     int task_count = ((int) order.size());
 
