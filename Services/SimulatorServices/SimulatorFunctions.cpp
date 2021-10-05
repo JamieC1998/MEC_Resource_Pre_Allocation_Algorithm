@@ -157,7 +157,7 @@ void SimulatorFunctions::processReadyTasks(
               [](std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> a,
                  std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> b) {
 
-                  return !a.get().m_property.task.get().isOffload();
+                  return a.get().m_property.task.get().isOffload() > b.get().m_property.task.get().isOffload();
               });
 
 }
