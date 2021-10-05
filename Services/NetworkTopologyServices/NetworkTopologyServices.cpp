@@ -120,7 +120,7 @@ float NetworkTopologyServices::getBandwidth(int source, int destination, Network
 
 NetworkTopology NetworkTopologyServices::generateNetwork() {
     ComputationNode cloudNodeA(4, 15, 128, 1000, cloud);
-    EdgeNode edgeNode(1, 10, 8, 250, node_type::edge, make_pair(1, 1));
+    EdgeNode edgeNode(4, 10, 8, 250, node_type::edge, make_pair(1, 1));
     MobileNode mobileNode(4, 4, 8, 16, mobile, make_pair(2, 2));
     ComputationNode cloudNodeB(4, 15, 128, 1000, cloud);
     ComputationNode cloudNodeC(4, 15, 128, 1000, cloud);
