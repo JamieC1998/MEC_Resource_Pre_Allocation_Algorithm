@@ -367,6 +367,12 @@ void SimulatorFunctions::preallocateTasks(
 
     auto outGoingTasks = SimulatorFunctions::getOutGoingTasks(total_task_lists, selectedTask);
 
+    std::sort(std::begin(outGoingTasks), std::end(outGoingTasks), [](
+            detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex * a,
+            detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex * b) {
+        return a->m_property.task->isOffload() > b->m_property.task->isOffload();
+    });
+
     for (auto &outGoingTask : outGoingTasks) {
         int index = -1;
         for (int i = 0; i < reservationQueue.size(); i++) {
