@@ -97,11 +97,11 @@ pair<int, float> SimulatorFunctions::ChooseNode(
     }
 
     for (auto vertex = networkList.begin(); vertex != networkList.end(); vertex++) {
-        if (SimulatorFunctions::isValidNode(task, vertex->m_property)) {
-            int current_node_index = ((int) std::distance(networkList.begin(), vertex));
+        int current_node_index = ((int) std::distance(networkList.begin(), vertex));
+        float current_run_time = SimulatorFunctions::calculateRunTime(task, source_node_index, current_node_index,
+                                                                      networkList, current_time, topology);
 
-            float current_run_time = SimulatorFunctions::calculateRunTime(task, source_node_index, current_node_index,
-                                                                          networkList, current_time, topology);
+        if (SimulatorFunctions::isValidNode(task, vertex->m_property)) {
 
             if (current_run_time < min_run_time) {
                 index = current_node_index;
