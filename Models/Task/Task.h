@@ -25,10 +25,10 @@ private:
     float ram;
 
     //Megabytes
-    unsigned int data_in;
+    float data_in;
 
     //Megabytes
-    unsigned int data_out;
+    float data_out;
 
     //Megabytes
     float storage;
@@ -41,8 +41,8 @@ private:
     bool offload;
 
 public:
-    Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-         unsigned int dataOut, float storage, int source_mobile_id, bool can_offload, int coreCount);
+    Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, float dataIn,
+         float dataOut, float storage, int source_mobile_id, bool can_offload, int coreCount);
 
     int getCoreCount() const;
 
@@ -72,13 +72,13 @@ public:
 
     void setRam(float ram);
 
-    unsigned int getDataIn() const;
+    float getDataIn() const;
 
-    void setDataIn(unsigned int dataIn);
+    void setDataIn(float dataIn);
 
-    unsigned int getDataOut() const;
+    float getDataOut() const;
 
-    void setDataOut(unsigned int dataOut);
+    void setDataOut(float dataOut);
 
     float getStorage() const;
 

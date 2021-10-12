@@ -10,6 +10,11 @@
 #include <Models/Task/Task.h>
 #include <vector>
 
+struct NodeMapping {
+    Task task;
+    std::pair<float, float> timeWindow;
+};
+
 class ComputationNode {
 private:
     static int id_counter;
@@ -24,7 +29,7 @@ private:
     //Megabytes
     float storage;
 
-    std::vector<Task> taskVector;
+    std::vector<NodeMapping> taskVector;
 
     node_type type;
     bool is_free;
@@ -34,7 +39,7 @@ public:
                     node_type type);
     int getId() const;
 
-    const std::vector<Task> &getTaskVector() const;
+    const std::vector<NodeMapping> &getTaskVector() const;
 
     friend std::ostream& operator << (std::ostream &os, const ComputationNode &cN);
 

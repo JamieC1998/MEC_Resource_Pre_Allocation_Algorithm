@@ -13,6 +13,8 @@ struct TaskMapping {
     float absoluteFinish = 0;
     std::reference_wrapper<TaskVertexData> task;
     std::reference_wrapper<NetworkVertexData> node;
+    float processStartTime = 0;
+    float processFinishTime = 0;
 };
 
 class main {

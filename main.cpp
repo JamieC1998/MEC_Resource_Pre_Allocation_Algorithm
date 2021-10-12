@@ -136,8 +136,8 @@ void main::logResults(const vector<TaskMapping> &finished, char* output_filename
         else if (i.node.get().type == mobile)
             myfile << i.node.get().mobileNode->to_string();
 
-        myfile << endl << "START TIME: " << i.absoluteStart << endl;
-        myfile << "FINISH TIME: " << i.absoluteFinish << endl;
+        myfile << endl << "START TIME: " << i.processStartTime << endl;
+        myfile << "FINISH TIME: " << i.processFinishTime << endl;
     }
     myfile.close();
     cout << output_filename;

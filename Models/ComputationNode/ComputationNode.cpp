@@ -69,7 +69,7 @@ int ComputationNode::getId() const {
     return id;
 }
 
-const std::vector<Task> &ComputationNode::getTaskVector() const {
+const std::vector<NodeMapping> &ComputationNode::getTaskVector() const {
     return taskVector;
 }
 

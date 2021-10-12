@@ -7,8 +7,8 @@
 
 int Task::task_id_counter = 0;
 
-Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-           unsigned int dataOut, float storage, int sourceMobileId, bool canOffload, int coreCount) : name(name),
+Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, float dataIn,
+           float dataOut, float storage, int sourceMobileId, bool canOffload, int coreCount) : name(name),
                                                                                                              millions_of_instructions(
                                                                                                                      millionsOfInstructions),
                                                                                                              ram(ram),
@@ -41,19 +41,19 @@ void Task::setRam(float ram) {
     Task::ram = ram;
 }
 
-unsigned int Task::getDataIn() const {
+float Task::getDataIn() const {
     return data_in;
 }
 
-void Task::setDataIn(unsigned int dataIn) {
+void Task::setDataIn(float dataIn) {
     data_in = dataIn;
 }
 
-unsigned int Task::getDataOut() const {
+float Task::getDataOut() const {
     return data_out;
 }
 
-void Task::setDataOut(unsigned int dataOut) {
+void Task::setDataOut(float dataOut) {
     data_out = dataOut;
 }
 
