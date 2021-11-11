@@ -39,7 +39,10 @@ public:
 
     static std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> generateEdgeMap(NetworkTopology& network, int node_count);
 
-    static std::pair<float, float> findLinkSlot(std::vector<std::pair<float, float>> occupancy_times, float start_time, float data_size, float bandwidth);
+    static std::pair<float, float>
+    findLinkSlot(std::vector<std::pair<float, float>> occupancy_times, float start_time, float data_size,
+                 float bandwidth,
+                 float d);
 
 };
 

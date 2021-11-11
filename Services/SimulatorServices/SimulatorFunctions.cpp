@@ -222,7 +222,8 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
         if(parent.nodeIndex != currentNodeIndex){
             EdgePropertyData &edge = (parent.nodeIndex < currentNodeIndex) ? map.at(parent.nodeIndex).at(currentNodeIndex) : map.at(currentNodeIndex).at(parent.nodeIndex);
             float bw = INT_MAX - edge.edge_weight;
-            time_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, parent_upload_start, parent.task.get().task->getDataOut(), bw);
+            time_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, parent_upload_start,
+                                                                parent.task.get().task->getDataOut(), bw, edge.latency);
             edge.occupancy_times.push_back(time_window);
         }
 

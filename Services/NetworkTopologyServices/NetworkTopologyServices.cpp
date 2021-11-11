@@ -95,9 +95,12 @@ NetworkTopologyServices::addUploadsToLink(const std::pair<std::vector<pair<float
  * @param bandwidth The bandwidth of the link
  * @return Valid time window for data upload
  */
-pair<float, float> NetworkTopologyServices::findLinkSlot(vector<pair<float, float>> occupancy_times, float start_time, float data_size, float bandwidth) {
+std::pair<float, float>
+NetworkTopologyServices::findLinkSlot(std::vector<std::pair<float, float>> occupancy_times, float start_time,
+                                      float data_size, float bandwidth,
+                                      float latency) {
 
-    float duration = data_size / bandwidth;
+    float duration = (data_size / bandwidth) + latency;
 
     pair<float, float> res = make_pair(start_time, start_time + duration);
 
@@ -168,35 +171,35 @@ NetworkTopology NetworkTopologyServices::generateNetwork() {
     auto v4 = add_vertex({edgeNodeB.getType(), none, edgeNodeB, none}, g);
     auto v5 = add_vertex({edgeNodeC.getType(), none, edgeNodeC, none}, g);
 
-    add_edge(v1, v2, EdgePropertyData{INT_MAX - 150}, g);
-    add_edge(v2, v1, EdgePropertyData{INT_MAX - 150}, g);
+    add_edge(v1, v2, EdgePropertyData{INT_MAX - 150, 0.001}, g);
+    add_edge(v2, v1, EdgePropertyData{INT_MAX - 150, 0.001}, g);
 
-    add_edge(v1, v3, EdgePropertyData{INT_MAX - 36}, g);
-    add_edge(v3, v1, EdgePropertyData{INT_MAX - 36}, g);
+    add_edge(v1, v3, EdgePropertyData{INT_MAX - 36, 0.07}, g);
+    add_edge(v3, v1, EdgePropertyData{INT_MAX - 36, 0.07}, g);
 
-    add_edge(v1, v4, EdgePropertyData{INT_MAX - 150}, g);
-    add_edge(v4, v1, EdgePropertyData{INT_MAX - 150}, g);
+    add_edge(v1, v4, EdgePropertyData{INT_MAX - 150, 0.001}, g);
+    add_edge(v4, v1, EdgePropertyData{INT_MAX - 150, 0.001}, g);
 
-    add_edge(v1, v5, EdgePropertyData{INT_MAX - 150}, g);
-    add_edge(v5, v1, EdgePropertyData{INT_MAX - 150}, g);
+    add_edge(v1, v5, EdgePropertyData{INT_MAX - 150, 0.001}, g);
+    add_edge(v5, v1, EdgePropertyData{INT_MAX - 150, 0.001}, g);
 
-    add_edge(v2, v3, EdgePropertyData{INT_MAX - 1024}, g);
-    add_edge(v3, v2, EdgePropertyData{INT_MAX - 1024}, g);
+    add_edge(v2, v3, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
+    add_edge(v3, v2, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
 
-    add_edge(v2, v4, EdgePropertyData{INT_MAX - 1024}, g);
-    add_edge(v4, v2, EdgePropertyData{INT_MAX - 1024}, g);
+    add_edge(v2, v4, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
+    add_edge(v4, v2, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
 
-    add_edge(v2, v5, EdgePropertyData{INT_MAX - 1024}, g);
-    add_edge(v5, v2, EdgePropertyData{INT_MAX - 1024}, g);
+    add_edge(v2, v5, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
+    add_edge(v5, v2, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
 
-    add_edge(v3, v4, EdgePropertyData{INT_MAX - 1024}, g);
-    add_edge(v4, v3, EdgePropertyData{INT_MAX - 1024}, g);
+    add_edge(v3, v4, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
+    add_edge(v4, v3, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
 
-    add_edge(v3, v5, EdgePropertyData{INT_MAX - 1024}, g);
-    add_edge(v5, v3, EdgePropertyData{INT_MAX - 1024}, g);
+    add_edge(v3, v5, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
+    add_edge(v5, v3, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
 
-    add_edge(v4, v5, EdgePropertyData{INT_MAX - 1024}, g);
-    add_edge(v5, v4, EdgePropertyData{INT_MAX - 1024}, g);
+    add_edge(v4, v5, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
+    add_edge(v5, v4, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
 
     return g;
 }
