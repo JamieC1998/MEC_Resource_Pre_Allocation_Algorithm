@@ -88,6 +88,33 @@ ApplicationTopology ApplicationTopologyServices::generateChessApp(int source_mob
     return a;
 }
 
+vector<float> ApplicationTopologyServices::getParentData(vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>& total_task_lists, int source_node_id){
+    int application = -1;
+    int index = -1;
+
+    vector<float> data_in;
+
+    for(int i = 0; i < total_task_lists.size(); i++){
+        for(int x = 0; x < total_task_lists[i].size(); x++){
+            if(total_task_lists[i][x].m_property.task->getId() == source_node_id){
+                application = i;
+                index = x;
+                break;
+            }
+        }
+        if(application != -1)
+            break;
+    }
+
+    if(application != -1){
+        for(int i = 0; i < total_task_lists[application][index].m_in_edges.size(); i++){
+            data_in.push_back(total_task_lists[application][total_task_lists[application][index].m_in_edges[i].m_target].m_property.task->getDataOut());
+        }
+    }
+
+    return data_in;
+}
+
 vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
 ApplicationTopologyServices::getVertices(ApplicationTopology &application) {
     vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> res;

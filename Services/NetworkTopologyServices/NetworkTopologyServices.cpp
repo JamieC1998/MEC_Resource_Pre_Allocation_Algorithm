@@ -12,59 +12,6 @@
 
 using namespace std;
 
-/**
- * This function will find the shortest path from a source node to every other node within the graph.
- *
- * @param start - An integer representing the node you want to find the shortest path to all other nodes from
- * @param network - A reference to a graph topology that you want to navigate
- *
- * @return - A pair that contains:
- *  [0] <vector<unsigned long>> A vector that contains the shortest path to each node
- *  [1] A list that contains the distance to each node
- *
- */
-pair<vector<unsigned long>, iterator_property_map<__wrap_iter<int *>, vec_adj_list_vertex_id_map<NetworkVertexData, unsigned long>, int, int &>>
-NetworkTopologyServices::shortestPaths(int start, NetworkTopology &network) {
-    vector<network_vertex_descriptor> pred(num_vertices(network));
-    iterator_property_map<vector<network_vertex_descriptor>::iterator,
-            IdMap,
-            network_vertex_descriptor,
-            network_vertex_descriptor &>
-            pred_map(pred.begin(), get(vertex_index, network));
-
-    std::vector<int> dist_vector(num_vertices(network));
-    boost::iterator_property_map<std::vector<int>::iterator,
-            IdMap,
-            int,
-            int &>
-            distmap_vect(dist_vector.begin(), get(boost::vertex_index, network));
-
-    dijkstra_shortest_paths(network, 0, predecessor_map(pred_map).distance_map(distmap_vect));
-
-    return make_pair(pred, distmap_vect);
-}
-
-/**
- * Will provide a list of ints describing the route between two points.
- *
- * @param start - The index of the starting node
- * @param goal - The index of the end node
- * @param pred - The list of vectors contain the shortest path to each node
- *
- * @return - A vector of ints representing the nodes you must traverse to travel from start -> goal
- */
-std::vector<int> NetworkTopologyServices::shortestRouteBetweenTwoPoints(int start, int goal, vector<network_vertex_descriptor> pred) {
-    int current = goal;
-    vector<int> route;
-    do {
-        if (pred[current] != start)
-            route.insert(route.begin(), pred[current]);
-        current = pred[current];
-    } while (current != start);
-
-    return route;
-};
-
 void NetworkTopologyServices::logInfo(NetworkTopology &network) {
     pair<network_edge_iterator, network_edge_iterator> ei = edges(network);
 
@@ -75,7 +22,7 @@ void NetworkTopologyServices::logInfo(NetworkTopology &network) {
 
     property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
     for (auto iter = ei.first; iter != ei.second; iter++) {
-        cout << "edge " << *iter << " weight " << INT_MAX - get(weightMap, *iter) << endl;
+        cout << "edge " << *iter << " weight " << INT_MAX - get(weightMap, *iter).edge_weight << endl;
     }
 
 
@@ -85,34 +32,118 @@ void NetworkTopologyServices::logInfo(NetworkTopology &network) {
     for (auto iter = vi.first; iter != vi.second; iter++) {
         node_type type = get(&NetworkVertexData::type, network)[(int) *iter];
         if (type == mobile)
-            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::mobileNode, network)[*iter].get().to_string()
-                 << endl;
+            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::mobileNode, network)[*iter]->to_string()
+            << endl;
         else if (type == node_type::edge)
-            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::edgeNode, network)[*iter].get().to_string()
-                 << endl;
+            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::edgeNode, network)[*iter]->to_string()
+            << endl;
         else if (type == cloud)
-            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::comp, network)[*iter].get().to_string()
-                 << endl;
-    }
-
-    int start = 0;
-    int goal = 4;
-
-    auto paths_and_dist = NetworkTopologyServices::shortestPaths(start, network);
-    vector<int> route = NetworkTopologyServices::shortestRouteBetweenTwoPoints(start, goal, paths_and_dist.first);
-
-    cout << "Shortest route between vertices " << start << " and " << goal << ":" << endl;
-
-    for (int & it : route) {
-        cout << " Vertex: " << it << endl;
+            cout << "Vertex " << *iter << ":\n" << get(&NetworkVertexData::comp, network)[*iter]->to_string()
+            << endl;
     }
 }
 
-float NetworkTopologyServices::getBandwidth(int source, int destination, NetworkTopology& network){
-    property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
-    auto res = boost::edge(source, destination, network).first;
+float NetworkTopologyServices::getBandwidth(int source, int destination, NetworkTopology &network) {
+    if (source == destination)
+        return 0;
 
-    return INT_MAX - get(weightMap, res);
+    property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
+
+    auto res = boost::edge(source, destination, network).first;
+    return INT_MAX - get(weightMap, res).edge_weight;
+}
+
+vector<pair<float, float>>
+NetworkTopologyServices::getActiveUploads(int source, int destination, float start_time, NetworkTopology &g) {
+    property_map<NetworkTopology, edge_weight_t>::type weight_map = get(edge_weight, g);
+
+    auto res = boost::edge(source, destination, g).first;
+    vector<pair<float, float>> upload_events = get(weight_map, res).occupancy_times;
+    vector<pair<float, float>> active_tasks;
+    for (pair<float, float> upload_event : upload_events) {
+        if (upload_event.second >= start_time)
+            active_tasks.push_back(upload_event);
+    }
+    return active_tasks;
+}
+
+void
+NetworkTopologyServices::addUploadsToLink(std::vector<pair<float, float>> &uploadTimes,
+                                          int source_node,
+                                          int destination_node,
+                                          NetworkTopology &network,
+                                          std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
+    if (source_node == destination_node)
+        return;
+    for (const auto & uploadTime : uploadTimes) {
+        EdgePropertyData &edge = map.at(source_node).at(destination_node);
+        edge.occupancy_times.push_back(uploadTime);
+    }
+}
+
+/**
+ * Function iterates through a list of reserved windows for a link and returns
+ * a free time slot for data upload
+ *
+ * @param occupancy_times List of occupied time slots for a link/edge
+ * @param start_time The cutoff point, any free time slot before this we do not consider
+ * @param data_size The size of the data to be transferred
+ * @param bandwidth The bandwidth of the link
+ * @return Valid time window for data upload
+ */
+pair<float, float> NetworkTopologyServices::findLinkSlot(vector<pair<float, float>> occupancy_times, float start_time, float data_size, float bandwidth) {
+
+    float duration = data_size / bandwidth;
+
+    pair<float, float> res = make_pair(start_time, start_time + duration);
+
+    sort(occupancy_times.begin(), occupancy_times.end(),
+         [](const pair<float, float> &a, const pair<float, float> &b) -> bool {
+        return a.second < b.second;
+    });
+
+    for (int i = 0; i < occupancy_times.size(); i++) {
+        if (occupancy_times[i].second < start_time)
+            continue;
+
+        if(i < occupancy_times.size() - 1){
+            float time_window = (occupancy_times[i + 1].first - 0.00001f) - occupancy_times[i].second + 0.00001f;
+            if(duration <= time_window){
+                res.first = occupancy_times[i].second + 0.00001f;
+                res.second = res.first + duration;
+                break;
+            }
+        }
+        else{
+            res.first = occupancy_times[i].second + 0.00001f;
+            res.second = res.first + duration;
+            break;
+        }
+    }
+
+    return res;
+}
+
+std::unordered_map<int, std::unordered_map<int, EdgePropertyData>>
+NetworkTopologyServices::generateEdgeMap(NetworkTopology &network, int node_count) {
+    property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
+
+    std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> res;
+
+    for (int i = 0; i < node_count; i++) {
+        std::unordered_map<int, EdgePropertyData> tmp;
+
+        for (int x = 0; x < node_count; x++) {
+            if (x == i)
+                continue;
+
+            tmp.insert({x, get(weightMap, boost::edge((i < x) ? i : x, (i < x) ? x : i, network).first)});
+        }
+
+        res.insert({i, tmp});
+    }
+
+    return res;
 }
 
 NetworkTopology NetworkTopologyServices::generateNetwork() {
@@ -130,24 +161,45 @@ NetworkTopology NetworkTopologyServices::generateNetwork() {
     auto v4 = add_vertex({cloudNodeB.getType(), cloudNodeB, none, none}, g);
     auto v5 = add_vertex({cloudNodeC.getType(), cloudNodeC, none, none}, g);
 
-    add_edge(v1, v2, INT_MAX - 5, g);
-    add_edge(v1, v3, INT_MAX - 5, g);
-    add_edge(v1, v4, INT_MAX - 10, g);
-    add_edge(v1, v5, INT_MAX - 10, g);
-    add_edge(v2, v3, INT_MAX - 6, g);
-    add_edge(v2, v4, INT_MAX - 6, g);
-    add_edge(v2, v5, INT_MAX - 6, g);
-    add_edge(v3, v4, INT_MAX - 5, g);
-    add_edge(v3, v5, INT_MAX - 5, g);
-    add_edge(v4, v5, INT_MAX - 5, g);
+
+    add_edge(v1, v2, EdgePropertyData{INT_MAX - 5}, g);
+    add_edge(v2, v1, EdgePropertyData{INT_MAX - 5}, g);
+
+    add_edge(v1, v3, EdgePropertyData{INT_MAX - 5}, g);
+    add_edge(v3, v1, EdgePropertyData{INT_MAX - 5}, g);
+
+    add_edge(v1, v4, EdgePropertyData{INT_MAX - 10}, g);
+    add_edge(v4, v1, EdgePropertyData{INT_MAX - 10}, g);
+
+    add_edge(v1, v5, EdgePropertyData{INT_MAX - 10}, g);
+    add_edge(v5, v1, EdgePropertyData{INT_MAX - 10}, g);
+
+    add_edge(v2, v3, EdgePropertyData{INT_MAX - 6}, g);
+    add_edge(v3, v2, EdgePropertyData{INT_MAX - 6}, g);
+
+    add_edge(v2, v4, EdgePropertyData{INT_MAX - 6}, g);
+    add_edge(v4, v2, EdgePropertyData{INT_MAX - 6}, g);
+
+    add_edge(v2, v5, EdgePropertyData{INT_MAX - 6}, g);
+    add_edge(v5, v2, EdgePropertyData{INT_MAX - 6}, g);
+
+    add_edge(v3, v4, EdgePropertyData{INT_MAX - 5}, g);
+    add_edge(v4, v3, EdgePropertyData{INT_MAX - 5}, g);
+
+    add_edge(v3, v5, EdgePropertyData{INT_MAX - 5}, g);
+    add_edge(v5, v3, EdgePropertyData{INT_MAX - 5}, g);
+
+    add_edge(v4, v5, EdgePropertyData{INT_MAX - 5}, g);
+    add_edge(v5, v4, EdgePropertyData{INT_MAX - 5}, g);
+
 
 
     return g;
 }
 
-vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
+vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex>
 NetworkTopologyServices::getVertices(NetworkTopology &network) {
-    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> res;
+    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> res;
 
     pair<network_vertex_iterator, network_vertex_iterator> vi = vertices(network);
 

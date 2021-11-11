@@ -126,9 +126,11 @@ SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &vt, s
  * @param topology -  The graph representing the network
  * @return - Returns the index of the node with the lowest run time and the estimated time of completion
  */
-pair<pair<int, float>, pair<float, float>> SimulatorFunctions::ChooseNode(
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-        Task &task, float current_time, NetworkTopology &topology) {
+std::pair<std::pair<int, float>, std::pair<float, float>> SimulatorFunctions::ChooseNode(
+        std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList,
+        Task &task, float current_time, NetworkTopology &topology, std::vector<float> upload_inputs,
+        std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> edge_map,
+        std::vector<pair<float, float>> &data_transfer_times) {
 
     int index = -1;
     float min_run_time = ((float) INT_MAX);
@@ -150,10 +152,16 @@ pair<pair<int, float>, pair<float, float>> SimulatorFunctions::ChooseNode(
     pair<float, float> minProcessTime = make_pair(0.0f, 0.0f);
     for (auto vertex = networkList.begin(); vertex != networkList.end(); vertex++) {
         int current_node_index = ((int) std::distance(networkList.begin(), vertex));
-        pair<pair<float, float>, pair<float, float>> applicationTimeRange = SimulatorFunctions::calculateRunTime(task, source_node_index,
-                                                                    current_node_index,
-                                                                    networkList, current_time,
-                                                                    topology);
+        vector<pair<float, float>> tmp_data_transfer_times;
+        pair<pair<float, float>, pair<float, float>> applicationTimeRange = SimulatorFunctions::calculateRunTime(task,
+                                                                                                                 source_node_index,
+                                                                                                                 current_node_index,
+                                                                                                                 networkList,
+                                                                                                                 current_time,
+                                                                                                                 topology,
+                                                                                                                 upload_inputs,
+                                                                                                                 edge_map,
+                                                                                                                 tmp_data_transfer_times);
 
         if (SimulatorFunctions::isValidNode(task, vertex->m_property, applicationTimeRange.second)) {
 
@@ -161,6 +169,7 @@ pair<pair<int, float>, pair<float, float>> SimulatorFunctions::ChooseNode(
                 index = current_node_index;
                 min_run_time = applicationTimeRange.first.second;
                 minProcessTime = applicationTimeRange.second;
+                data_transfer_times = tmp_data_transfer_times;
             }
         }
 
@@ -169,10 +178,12 @@ pair<pair<int, float>, pair<float, float>> SimulatorFunctions::ChooseNode(
     return make_pair(make_pair(index, min_run_time), minProcessTime);
 }
 
-pair<pair<float, float>, pair<float, float>>
+std::pair<std::pair<float, float>, std::pair<float, float>>
 SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int currentNodeIndex,
-                                     vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-                                     float current_time, NetworkTopology &network) {
+                                     std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList,
+                                     float current_time, NetworkTopology &network, std::vector<float> upload_times,
+                                     std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> edge_map,
+                                     std::vector<pair<float, float>> &tmp_data_transfer_times) {
 
     ComputationNode current_node = (networkList[currentNodeIndex].m_property.type == mobile)
                                    ? networkList[currentNodeIndex].m_property.mobileNode.get()
@@ -190,12 +201,27 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
                          make_pair(current_time, current_time + rt_local));
 
     float bandwidth = NetworkTopologyServices::getBandwidth(source_node_index, currentNodeIndex, network);
-    auto mi = (float) (task.getMillionsOfInstructions() * 1000000);
-    float ot_up = ((mi * INSTRUCTION_SIZE_MEGABYTES) + ((float) task.getDataIn())) / bandwidth;
-    float ot_down = ((float) task.getDataOut()) / bandwidth;
+    float ot_up = 0.0f;
 
-    return make_pair(make_pair(current_time, current_time + rt_local + ot_up + ot_down),
-                     make_pair(current_time + ot_up, current_time + ot_up + rt_local));
+    EdgePropertyData &edge = edge_map.at(source_node_index).at(currentNodeIndex);
+
+    for (float upload_time : upload_times) {
+        pair<float, float> window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, current_time,
+                                                                          upload_time, bandwidth);
+        edge.occupancy_times.push_back(window);
+        tmp_data_transfer_times.push_back(window);
+
+        if (ot_up < window.second)
+            ot_up = window.second;
+    }
+
+    pair<float, float> ot_down_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, rt_local + ot_up,
+                                                                          task.getDataOut(), bandwidth);
+    tmp_data_transfer_times.push_back(ot_down_window);
+    float ot_down = ot_down_window.second;
+
+    return make_pair(make_pair(current_time, current_time + ot_up + rt_local + ot_down),
+                     make_pair(ot_up, current_time + ot_up + rt_local));
 }
 
 void SimulatorFunctions::processReadyTasks(
@@ -220,16 +246,24 @@ void SimulatorFunctions::processReadyTasks(
 
 }
 
-void SimulatorFunctions::taskMapping(
-        float time,
-        NetworkTopology &network,
-        vector<TaskMapping> *inProgress,
-        TaskVertexData &selectedTask,
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList) {
+void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::vector<TaskMapping> *inProgress,
+                                     TaskVertexData &selectedTask,
+                                     std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+                                     std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
+                                     std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
+
+    vector<float> upload_inputs = ApplicationTopologyServices::getParentData(total_task_lists,
+                                                                             selectedTask.task.get().getId());
+
+    vector<pair<float, float>> data_transfer_times;
+    Task task = selectedTask.task.get();
+
     pair<pair<int, float>, pair<float, float>> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
                                                                                                  selectedTask.task.get(),
                                                                                                  time,
-                                                                                                 network);
+                                                                                                 network,
+                                                                                                 upload_inputs, map,
+                                                                                                 data_transfer_times);
 
     //If a valid node has not been found
     if (selectedNodeData.first.first == -1)
@@ -253,16 +287,16 @@ void SimulatorFunctions::taskMapping(
     inProgress->push_back(
             {time, selectedNodeData.first.second, selectedTask, selectedNode, selectedNodeData.second.first,
              selectedNodeData.second.second});
+
+    NetworkTopologyServices::addUploadsToLink(data_transfer_times, 0, selectedNodeData.first.first, network, map);
 }
 
 void SimulatorFunctions::runAlgorithm(
-        vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
-        &readyTaskList,
-        vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
-        vector<TaskMapping> &inProgress,
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList,
-        NetworkTopology &network,
-        float time) {
+        std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &readyTaskList,
+        std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
+        std::vector<TaskMapping> &inProgress,
+        std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+        NetworkTopology &network, float time, std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
 
     SimulatorFunctions::processReadyTasks(&readyTaskList, &total_task_lists);
 
@@ -274,7 +308,8 @@ void SimulatorFunctions::runAlgorithm(
         selectedTask.task.get().setDataIn(inputSize);
         readyTaskList.pop_back();
 
-        SimulatorFunctions::taskMapping(time, network, &inProgress, selectedTask, networkVertexList);
+        SimulatorFunctions::taskMapping(time, network, &inProgress, selectedTask, networkVertexList, total_task_lists,
+                                        map);
     }
 }
 
@@ -304,6 +339,9 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
     //Contains a finished list of tasks
     vector<TaskMapping> finished;
 
+    std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> edge_data = NetworkTopologyServices::generateEdgeMap(
+            network, networkVertexList.size());
+
     while (!(time >= completion_time || (finished.size() == total_task_count && incoming_applications.empty()))) {
         //Sorting the current event list from most recent to oldest time
         inProgress = SimulatorFunctions::sortEventList(inProgress);
@@ -313,7 +351,8 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
 
         SimulatorFunctions::checkIncomingApplications(&total_task_lists, &incoming_applications, time);
 
-        SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time);
+        SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time,
+                                         edge_data);
     }
 
     main::logResults(finished, output_file_name);
@@ -405,8 +444,7 @@ void SimulatorFunctions::UpdateEventList(std::vector<TaskMapping> &inProgress, s
                 node.getTaskVector().begin() + task_index_to_rem);
 
         finished.push_back(tM);
-    }
-    else if (app_chosen) {
+    } else if (app_chosen) {
         time = app_min_time;
     }
 }
