@@ -207,7 +207,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
 
     for (float upload_time : upload_times) {
         pair<float, float> window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, current_time,
-                                                                          upload_time, bandwidth);
+                                                                          upload_time, bandwidth, edge.latency);
         edge.occupancy_times.push_back(window);
         tmp_data_transfer_times.push_back(window);
 
@@ -216,7 +216,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
     }
 
     pair<float, float> ot_down_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, rt_local + ot_up,
-                                                                          task.getDataOut(), bandwidth);
+                                                                              task.getDataOut(), bandwidth, 0);
     tmp_data_transfer_times.push_back(ot_down_window);
     float ot_down = ot_down_window.second;
 

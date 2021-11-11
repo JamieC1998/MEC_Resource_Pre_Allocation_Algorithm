@@ -43,7 +43,8 @@ public:
 
     static std::pair<float, float>
     findLinkSlot(std::vector<std::pair<float, float>> occupancy_times, float start_time, float data_size,
-                 float bandwidth);
+                 float bandwidth,
+                 float d);
 };
 
 #endif //FIRSTHOPMOBILEOFFLOADING_NETWORKTOPOLOGYSERVICES_H

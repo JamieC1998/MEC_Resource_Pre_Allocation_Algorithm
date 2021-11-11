@@ -9,6 +9,9 @@
 
 struct EdgePropertyData {
     int edge_weight;
+
+    //Link latency in seconds
+    float latency;
     std::vector<std::pair<float, float>> occupancy_times;
 };
 
