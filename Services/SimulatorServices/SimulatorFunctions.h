@@ -35,7 +35,7 @@ public:
                                                             float current_time, NetworkTopology &network,
                                                             std::vector<TaskMapping> parents,
                                                             float &startTime, std::vector<std::pair<float, float>> &tmp_finish_times,
-                                                            std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map);
+                                                            std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> map);
 
     static std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
     getReadyTasks(

@@ -199,7 +199,7 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
                                            float current_time, NetworkTopology &network,
                                            std::vector<TaskMapping> parents,
                                            float &startTime, std::vector<pair<float, float>> &tmp_finish_times,
-                                           std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
+                                           std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> map) {
 
     ComputationNode current_node = (networkList[currentNodeIndex].m_property.type == mobile)
                                    ? networkList[currentNodeIndex].m_property.mobileNode.get()
@@ -220,9 +220,10 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
         float parent_upload_start = (parent.absoluteFinish + 0.00001f < current_time) ? current_time : parent.absoluteFinish + 0.00001f;
         pair<float, float> time_window = make_pair(-1, parent_upload_start);
         if(parent.nodeIndex != currentNodeIndex){
-            EdgePropertyData edge = (parent.nodeIndex < currentNodeIndex) ? map.at(parent.nodeIndex).at(currentNodeIndex) : map.at(currentNodeIndex).at(parent.nodeIndex);
+            EdgePropertyData &edge = (parent.nodeIndex < currentNodeIndex) ? map.at(parent.nodeIndex).at(currentNodeIndex) : map.at(currentNodeIndex).at(parent.nodeIndex);
             float bw = INT_MAX - edge.edge_weight;
             time_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, parent_upload_start, parent.task.get().task->getDataOut(), bw);
+            edge.occupancy_times.push_back(time_window);
         }
 
         tmp_finish_times.push_back(time_window);
