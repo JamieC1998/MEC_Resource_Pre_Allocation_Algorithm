@@ -7,6 +7,7 @@
 
 #include <boost/graph/adjacency_list.hpp>
 #include <Models/VertexData/TaskVertexData.h>
+#include <Models/VertexData/EdgePropertyData.h>
 
 using namespace boost;
 

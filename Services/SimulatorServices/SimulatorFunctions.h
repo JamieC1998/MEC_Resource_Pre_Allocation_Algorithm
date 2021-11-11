@@ -25,14 +25,17 @@ public:
     static std::vector<TaskMapping> sortEventList(std::vector<TaskMapping> eventList);
 
     static std::pair<int, float> ChooseNode(
-            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-            Task &task, float current_time, NetworkTopology &topology, std::vector<TaskMapping> parents,
-            float &startTime);
+            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList,
+            Task &task, float current_time, NetworkTopology &topology, const std::vector<TaskMapping> &parents,
+            float &startTime, std::vector<std::pair<float, float>> &finish_times_list,
+            std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map);
 
-    static float calculateRunTime(Task &task, int source_node_index, int currentNodeIndex,
-                                  std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-                                  float current_time, NetworkTopology &network, std::vector<TaskMapping> parents,
-                                  float &startTime);
+    static float calculateRunTime(Task &task, int currentNodeIndex,
+                                                            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList,
+                                                            float current_time, NetworkTopology &network,
+                                                            std::vector<TaskMapping> parents,
+                                                            float &startTime, std::vector<std::pair<float, float>> &tmp_finish_times,
+                                                            std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map);
 
     static std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
     getReadyTasks(
@@ -42,25 +45,20 @@ public:
             std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *> &readyTaskList,
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_lists);
 
-    static void taskMapping(
-            float time,
-            NetworkTopology &network,
-            std::vector<TaskMapping> *inProgress,
-            TaskVertexData &selectedTask,
-            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList,
-            std::vector<ReservationMapping> &reservationQueue,
-            std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
-            &total_task_lists);
+    static void taskMapping(float time, NetworkTopology &network, std::vector<TaskMapping> *inProgress,
+                            TaskVertexData &selectedTask,
+                            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+                            std::vector<ReservationMapping> &reservationQueue,
+                            std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
+                            std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map);
 
     static void runAlgorithm(
-            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
-            &readyTaskList,
+            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *> &readyTaskList,
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
             std::vector<TaskMapping> &inProgress,
-            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList,
-            NetworkTopology &network,
-            float time,
-            std::vector<ReservationMapping> &reservationQueue);
+            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+            NetworkTopology &network, float time, std::vector<ReservationMapping> &reservationQueue,
+            std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map);
 
     static int checkIfTaskReserved(std::vector<ReservationMapping> &reservationQueue, TaskVertexData &selectedTask);
 
@@ -71,15 +69,12 @@ public:
             TaskVertexData &selectedTask);
 
     static void preallocateTasks(
-            std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
-            &total_task_lists,
+            std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
             TaskVertexData &selectedTask,
-            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList,
-            std::vector<ReservationMapping> &reservationQueue,
-            NetworkTopology &network,
-            float time,
-            TaskMapping map,
-            std::vector<TaskMapping> *inProgress);
+            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+            std::vector<ReservationMapping> &reservationQueue, NetworkTopology &network, float time, TaskMapping map,
+            std::vector<TaskMapping> *inProgress,
+            std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &unorderedMap);
 
     static std::vector<ReservationMapping> sortReservations(std::vector<ReservationMapping> reservationMappings);
 };

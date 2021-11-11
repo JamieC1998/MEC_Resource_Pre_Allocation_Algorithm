@@ -144,9 +144,11 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
  * @param topology -  The graph representing the network
  * @return - Returns the index of the node with the lowest run time and the estimated time of completion
  */
-pair<int, float> SimulatorFunctions::ChooseNode(
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
-        Task &task, float current_time, NetworkTopology &topology, vector<TaskMapping> parents, float &startTime) {
+std::pair<int, float> SimulatorFunctions::ChooseNode(
+        std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList,
+        Task &task, float current_time, NetworkTopology &topology, const std::vector<TaskMapping> &parents,
+        float &startTime, std::vector<pair<float, float>> &finish_times_list,
+        std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
 
     int index = -1;
     float min_run_time = ((float) INT_MAX);
@@ -166,12 +168,15 @@ pair<int, float> SimulatorFunctions::ChooseNode(
         }
     }
 
+    vector<pair<float, float>> tmp_link_finish_times;
+
     for (auto vertex = networkList.begin(); vertex != networkList.end(); vertex++) {
         int current_node_index = ((int) std::distance(networkList.begin(), vertex));
         float tempStartTime = 0.0f;
-        float current_run_time = SimulatorFunctions::calculateRunTime(task, source_node_index, current_node_index,
+        tmp_link_finish_times.clear();
+        float current_run_time = SimulatorFunctions::calculateRunTime(task, current_node_index,
                                                                       networkList, current_time, topology, parents,
-                                                                      tempStartTime);
+                                                                      tempStartTime, tmp_link_finish_times, map);
 
         std::pair<float, float> applicationTimeRange = make_pair(tempStartTime, current_run_time);
 
@@ -180,18 +185,21 @@ pair<int, float> SimulatorFunctions::ChooseNode(
                 index = current_node_index;
                 min_run_time = current_run_time;
                 startTime = tempStartTime;
+                finish_times_list.clear();
+                std::copy(std::begin(tmp_link_finish_times), std::end(tmp_link_finish_times), std::back_inserter(finish_times_list));
             }
         }
-
     }
 
     return make_pair(index, min_run_time);
 }
 
-float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int currentNodeIndex,
-                                           vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkList,
+float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
+                                           std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList,
                                            float current_time, NetworkTopology &network,
-                                           vector<TaskMapping> parents, float &startTime) {
+                                           std::vector<TaskMapping> parents,
+                                           float &startTime, std::vector<pair<float, float>> &tmp_finish_times,
+                                           std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
 
     ComputationNode current_node = (networkList[currentNodeIndex].m_property.type == mobile)
                                    ? networkList[currentNodeIndex].m_property.mobileNode.get()
@@ -206,19 +214,19 @@ float SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, in
 
     //If the task is not allowed to be offloaded and this is the source task we do not need to calculate bandwidth
     //as there's no data to transfer
-    if (source_node_index == currentNodeIndex)
-        ot_up += current_time;
-    else {
-        float bandwidth = NetworkTopologyServices::getBandwidth(source_node_index, currentNodeIndex, network);
-        auto mi = (float) (task.getMillionsOfInstructions() * 1000000);
-        ot_up = ((mi * INSTRUCTION_SIZE_MEGABYTES) / bandwidth) + current_time;
-    }
+    ot_up += current_time;
 
-    for (auto &parent : parents) {
-        float bw = NetworkTopologyServices::getBandwidth(parent.nodeIndex, currentNodeIndex, network);
-        float tmp_ot_up = (bw == 0) ? (parent.absoluteFinish + 0.0001f) :
-                          (parent.task.get().task->getDataOut() / bw) + (parent.absoluteFinish);
-        if (tmp_ot_up > ot_up) ot_up = tmp_ot_up;
+    for (auto & parent : parents) {
+        float parent_upload_start = (parent.absoluteFinish + 0.00001f < current_time) ? current_time : parent.absoluteFinish + 0.00001f;
+        pair<float, float> time_window = make_pair(-1, parent_upload_start);
+        if(parent.nodeIndex != currentNodeIndex){
+            EdgePropertyData edge = (parent.nodeIndex < currentNodeIndex) ? map.at(parent.nodeIndex).at(currentNodeIndex) : map.at(currentNodeIndex).at(parent.nodeIndex);
+            float bw = INT_MAX - edge.edge_weight;
+            time_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, parent_upload_start, parent.task.get().task->getDataOut(), bw);
+        }
+
+        tmp_finish_times.push_back(time_window);
+        if (time_window.second > ot_up) ot_up = time_window.second;
     }
 
     startTime = ot_up;
@@ -266,16 +274,12 @@ SimulatorFunctions::checkIfTaskReserved(vector<ReservationMapping> &reservationQ
     return index;
 }
 
-void SimulatorFunctions::taskMapping(
-        float time,
-        NetworkTopology &network,
-        vector<TaskMapping> *inProgress,
-        TaskVertexData &selectedTask,
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList,
-        vector<ReservationMapping> &reservationQueue,
-        vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
-        &total_task_lists
-) {
+void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::vector<TaskMapping> *inProgress,
+                                     TaskVertexData &selectedTask,
+                                     std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+                                     std::vector<ReservationMapping> &reservationQueue,
+                                     std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
+                                     std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &hash_map) {
 
     int result = SimulatorFunctions::checkIfTaskReserved(reservationQueue, selectedTask);
     int nodeIndex = -1;
@@ -284,7 +288,7 @@ void SimulatorFunctions::taskMapping(
     float startTime = 0;
 
     NetworkVertexData *selectedNode;
-
+    vector<TaskMapping> parents;
     //If the task is pre-allocated
     if (result != -1) {
         auto &reservedTask = reservationQueue[result];
@@ -319,10 +323,11 @@ void SimulatorFunctions::taskMapping(
         reservations.erase(std::begin(reservations) + index);
         reservationQueue.erase(std::begin(reservationQueue) + result);
     } else {
-        vector<TaskMapping> parents;
+        vector<pair<float, float>> finish_times;
         pair<int, float> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
                                                                            selectedTask.task.get(), time,
-                                                                           network, parents, startTime);
+                                                                           network, parents, startTime, finish_times,
+                                                                           hash_map);
 
         //If a valid node has not been found
         if (selectedNodeData.first == -1)
@@ -331,6 +336,9 @@ void SimulatorFunctions::taskMapping(
         estimatedFinishTime = selectedNodeData.second;
         selectedNode = &networkVertexList[selectedNodeData.first].m_property;
         nodeIndex = selectedNodeData.first;
+
+        NetworkTopologyServices::addUploadsToLink(make_pair(finish_times, parents), selectedNodeData.first,
+                                                  network, hash_map);
     }
 
     selectedTask.task.get().setInProgress(true);
@@ -351,25 +359,22 @@ void SimulatorFunctions::taskMapping(
     inProgress->push_back(map);
 
     SimulatorFunctions::preallocateTasks(total_task_lists, selectedTask, networkVertexList, reservationQueue, network,
-                                         time, map, inProgress);
+                                         time, map, inProgress, hash_map);
 }
 
 void SimulatorFunctions::preallocateTasks(
-        vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
-        &total_task_lists,
+        std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
         TaskVertexData &selectedTask,
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &networkVertexList,
-        vector<ReservationMapping> &reservationQueue,
-        NetworkTopology &network,
-        float time,
-        TaskMapping map,
-        vector<TaskMapping> *inProgress) {
+        std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+        std::vector<ReservationMapping> &reservationQueue, NetworkTopology &network, float time, TaskMapping map,
+        std::vector<TaskMapping> *inProgress,
+        std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &unorderedMap) {
 
     auto outGoingTasks = SimulatorFunctions::getOutGoingTasks(total_task_lists, selectedTask);
 
     std::sort(std::begin(outGoingTasks), std::end(outGoingTasks), [](
-            detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex * a,
-            detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex * b) {
+            detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *a,
+            detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *b) {
         return a->m_property.task->isOffload() > b->m_property.task->isOffload();
     });
 
@@ -395,20 +400,20 @@ void SimulatorFunctions::preallocateTasks(
             index = reservationQueue.size() - 1;
         }
         if (reservationQueue[index].parents.size() == reservationQueue[index].parentCount) {
-
             float startTime = 0.0f;
-
+            vector<float> finish_times;
+            vector<pair<float, float>> parent_result_upload_windows;
             auto chooseNode = SimulatorFunctions::ChooseNode(networkVertexList, outGoingTask->m_property.task.get(),
                                                              map.absoluteStart,
                                                              network, reservationQueue[index].parents,
-                                                             startTime);
+                                                             startTime, parent_result_upload_windows,
+                                                             unorderedMap);
 
             //If we cannot preallocate a node for when our last task in our parents ends
             //Then we must attempt preallocate, fast forwarding through the state of the network till
             //a node can be preallocated.
             if (chooseNode.first == -1) {
-                vector<float> finish_times;
-
+                finish_times.clear();
                 float parent_start_time = reservationQueue[index].parents[reservationQueue[index].parents.size() -
                                                                           1].absoluteStart;
                 for (const auto &item: *inProgress) {
@@ -425,11 +430,13 @@ void SimulatorFunctions::preallocateTasks(
 
                 for (const float f_time: finish_times) {
                     startTime = 0.0f;
+                    parent_result_upload_windows.clear();
                     chooseNode = SimulatorFunctions::ChooseNode(networkVertexList,
                                                                 outGoingTask->m_property.task.get(),
                                                                 f_time,
                                                                 network, reservationQueue[index].parents,
-                                                                startTime);
+                                                                startTime, parent_result_upload_windows,
+                                                                unorderedMap);
                     if (chooseNode.first != -1)
                         break;
                 }
@@ -446,10 +453,14 @@ void SimulatorFunctions::preallocateTasks(
             reservationQueue[index].finishTime = chooseNode.second;
             reservationQueue[index].nodeIndex = chooseNode.first;
 
+
             vector<NodeMapping> nodeReservations = node.getReservations();
             nodeReservations.push_back(
                     {reservationQueue[index].task->task.get(), make_pair(startTime, chooseNode.second)});
             node.setReservations(nodeReservations);
+
+            NetworkTopologyServices::addUploadsToLink(make_pair(parent_result_upload_windows, reservationQueue[index].parents),
+                                                      chooseNode.first, network, unorderedMap);
         }
     }
 }
@@ -475,18 +486,14 @@ SimulatorFunctions::getOutGoingTasks(
 }
 
 void SimulatorFunctions::runAlgorithm(
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
-        &readyTaskList,
-        vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>
-        &total_task_lists,
-        vector<TaskMapping> &inProgress,
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
-        &networkVertexList,
-        NetworkTopology &network,
-        float time,
-        vector<ReservationMapping> &reservationQueue) {
+        std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *> &readyTaskList,
+        std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> &total_task_lists,
+        std::vector<TaskMapping> &inProgress,
+        std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkVertexList,
+        NetworkTopology &network, float time, std::vector<ReservationMapping> &reservationQueue,
+        std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
 
-    vector<pair<int,bool>> order = SimulatorFunctions::processReadyTasks(readyTaskList, &total_task_lists);
+    vector<pair<int, bool>> order = SimulatorFunctions::processReadyTasks(readyTaskList, &total_task_lists);
 
     int task_count = ((int) order.size());
 
@@ -494,7 +501,7 @@ void SimulatorFunctions::runAlgorithm(
         TaskVertexData &selectedTask = readyTaskList[order[i].first]->m_property;
 
         SimulatorFunctions::taskMapping(time, network, &inProgress, selectedTask, networkVertexList, reservationQueue,
-                                        total_task_lists);
+                                        total_task_lists, map);
     }
 }
 
@@ -537,6 +544,8 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
 
     vector<float> lower_bound_application_times;
 
+    std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> edge_data = NetworkTopologyServices::generateEdgeMap(network, networkVertexList.size());
+
     while (!(time >= completion_time || (finished.size() == total_task_count && incoming_applications.empty()))) {
         //Sorting the current event list from most recent to oldest time
         inProgress = SimulatorFunctions::sortEventList(inProgress);
@@ -550,7 +559,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
                                                       lower_bound_application_times, super_node_MI);
 
         SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time,
-                                         reservationQueue);
+                                         reservationQueue, edge_data);
     }
 
     main::logResults(finished, output_file_name);
@@ -627,6 +636,7 @@ void SimulatorFunctions::UpdateEventList(vector<TaskMapping> &inProgress, vector
         float finish_time = sortedReservationMappings.back().startTime;
         if (app_chosen && app_min_time < finish_time) time = app_min_time;
         else time = finish_time;
+
     } else if (!inProgress.empty()) {
         TaskMapping tM = inProgress.back();
         if (app_chosen && app_min_time < tM.absoluteFinish) {
