@@ -7,6 +7,7 @@
 
 
 #include <iostream>
+#include <enums/NodeTypes.h>
 
 const float INSTRUCTION_SIZE_MEGABYTES = 0.000002;
 
@@ -18,8 +19,6 @@ private:
     std::string name;
 
     int source_mobile_id;
-
-    unsigned long long int millions_of_instructions;
 
     //Gigabytes
     float ram;
@@ -40,8 +39,12 @@ private:
     //True means it can be offloaded, false must be processed on source
     bool offload;
 
+    float process_time_cloud;
+    float process_time_edge;
+    float process_time_mobile;
+
 public:
-    Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
+    Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile, float ram, unsigned int dataIn,
          unsigned int dataOut, float storage, int source_mobile_id, bool can_offload, int coreCount);
 
     int getCoreCount() const;
@@ -64,10 +67,6 @@ public:
 
     void setName(const std::string &name);
 
-    unsigned long long int getMillionsOfInstructions() const;
-
-    void setMillionsOfInstructions(unsigned long long int millionsOfInstructions);
-
     float getRam() const;
 
     void setRam(float ram);
@@ -87,6 +86,8 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Task &task);
 
     std::string to_string();
+
+    float getProcessTime(node_type nodeType);
 };
 
 

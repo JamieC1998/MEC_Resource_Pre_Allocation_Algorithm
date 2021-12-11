@@ -6,9 +6,8 @@
 #include "EdgeNode.h"
 
 
-EdgeNode::EdgeNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
+EdgeNode::EdgeNode(int gpu_count, float ram, float storage,
                    node_type type, const std::pair<double, double> &coords) : ComputationNode(cores,
-                                                                                              millionsInstructionsPerCore,
                                                                                               ram, storage, type),
                                                                               coords(coords) {}
 
@@ -38,7 +37,7 @@ double EdgeNode::getLatitude() {
 }
 
 std::ostream &operator<<(std::ostream &os, const EdgeNode &eN) {
-    return (os << " Cores: " << eN.getCores() << "\n MIPS: " << eN.getMillionsInstructionsPerCore() << "\n Storage: "
+    return (os << " Cores: " << eN.getGPU_Count() << "\n Storage: "
                << eN.getStorage() << "\n RAM: " << eN.getRam() << "\n Type: " << eN.printType() << "\n Free: "
                << eN.isFree() << "\n Coords: ( "
                << eN.getCoords().first << ", " << eN.getCoords().second << ")"  << "\n ID: " << eN.getId() << std::endl);

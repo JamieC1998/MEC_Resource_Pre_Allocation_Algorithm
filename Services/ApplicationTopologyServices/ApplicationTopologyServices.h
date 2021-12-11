@@ -8,6 +8,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <Models/VertexData/TaskVertexData.h>
 #include <Models/VertexData/EdgePropertyData.h>
+#include <Models/Mappings/SuperNode.h>
 
 using namespace boost;
 
@@ -39,7 +40,7 @@ public:
             std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
             int source_mobile_id);
 
-    static float calculateLowerBound(std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList, int super_node_MI);
+    static float calculateLowerBound(std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList, SuperNode super_node_MI);
 };
 
 

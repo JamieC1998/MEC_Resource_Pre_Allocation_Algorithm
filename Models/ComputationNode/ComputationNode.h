@@ -20,8 +20,7 @@ private:
     static int id_counter;
     int id;
 
-    int cores;
-    unsigned long long int millions_instructions_per_core;
+    int gpu_count;
 
     //Gigabytes
     float ram;
@@ -37,8 +36,7 @@ private:
     std::vector<NodeMapping> reservations;
 
 public:
-    ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
-                    node_type type);
+    ComputationNode(int gpu_count, float ram, float storage, node_type type);
 
     const std::vector<NodeMapping> &getReservations() const;
 
@@ -52,9 +50,7 @@ public:
 
     std::string to_string();
 
-    int getCores() const;
-
-    unsigned long long int getMillionsInstructionsPerCore() const;
+    int getGPU_Count() const;
 
     float getRam() const;
 

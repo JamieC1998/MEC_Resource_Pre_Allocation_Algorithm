@@ -111,7 +111,7 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
                 return false;
             if ((max_storage_usage + task.getStorage()) > node.getStorage())
                 return false;
-            if ((max_core_usage + task.getCoreCount()) > node.getCores())
+            if ((max_core_usage + task.getCoreCount()) > node.getGPU_Count())
                 return false;
         }
     }
@@ -127,7 +127,7 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
             return false;
         if ((max_storage_usage + task.getStorage()) > node.getStorage())
             return false;
-        if ((max_core_usage + task.getCoreCount()) > node.getCores())
+        if ((max_core_usage + task.getCoreCount()) > node.getGPU_Count())
             return false;
     }
     return true;
@@ -208,7 +208,7 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
                                      : networkList[currentNodeIndex].m_property.edgeNode.get();
 
 
-    float rt_local = (float) task.getMillionsOfInstructions() / (float) current_node.getMillionsInstructionsPerCore();
+    float rt_local = (float) task.getProcessTime(current_node.getType());
 
     float ot_up = 0.0f;
 
@@ -530,7 +530,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
 
     //Retrieving the list of vertices and their edges(in & out) in both our generated application and our network
     auto networkVertexList = NetworkTopologyServices::getVertices(network);
-    int super_node_MI = NetworkTopologyServices::getSuperNodeMI(networkVertexList);
+    SuperNode super_node = NetworkTopologyServices::getSuperNode(networkVertexList);
 
     //Will hold the tasks ready to be offloaded in each loop
     vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex *>
@@ -558,7 +558,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
                                             &incoming_applications);
 
         SimulatorFunctions::checkIncomingApplications(&total_task_lists, &incoming_applications, time,
-                                                      lower_bound_application_times, super_node_MI);
+                                                      lower_bound_application_times, super_node);
 
         SimulatorFunctions::runAlgorithm(readyTaskList, total_task_lists, inProgress, networkVertexList, network, time,
                                          reservationQueue, edge_data);
@@ -580,14 +580,15 @@ void SimulatorFunctions::checkIncomingApplications(
         vector<vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
         vector<ApplicationEvent> *applications,
         float current_time, vector<float> &lower_bound_time,
-        int super_node_MI) {
+        const SuperNode& super_node) {
 
     vector<ApplicationEvent> &incoming_application = *applications;
     for (int i = 0; i < incoming_application.size(); i++) {
         if (incoming_application[i].ready_time <= current_time) {
             auto application_tasks = ApplicationTopologyServices::getVertices(incoming_application[i].application);
 
-            lower_bound_time.push_back(ApplicationTopologyServices::calculateLowerBound(application_tasks, 10));
+
+            lower_bound_time.push_back(ApplicationTopologyServices::calculateLowerBound(application_tasks, super_node));
             total_task_list->push_back(application_tasks);
             incoming_application.erase(incoming_application.begin() + i);
             i = i - 1;

@@ -6,6 +6,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <Models/Task/Task.h>
 #include <stack>
+#include <Models/Mappings/SuperNode.h>
 
 using namespace std;
 
@@ -33,8 +34,8 @@ ApplicationTopology ApplicationTopologyServices::generateApplications(
         auto &application = item.second[j];
         vector<string> strL = application.first;
         vector<string> edgeL = application.second;
-        Task generated_task(strL[0], stoi(strL[1]), stof(strL[2]), stoi(strL[3]), stoi(strL[4]),
-                            stoi(strL[5]), source_mobile_id, stoi(strL[6]), stoi(strL[7]));
+        Task generated_task(strL[0], stof(strL[1]), stof(strL[2]), stof(strL[3]), stof(strL[4]), stoi(strL[5]), stoi(strL[6]),
+                            stoi(strL[7]), source_mobile_id, stoi(strL[8]), stoi(strL[9]));
 
         add_vertex({generated_task}, a);
 
@@ -102,84 +103,89 @@ float total_path_time(vector<CriticalPathItem> critical_path_list) {
 
 float ApplicationTopologyServices::calculateLowerBound(
         vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList,
-        int super_node_MI) {
+        SuperNode super_node) {
 
-    vector<CriticalPathItem> critical_path_list;
+//    vector<CriticalPathItem> critical_path_list;
+//
+//    for (int i = 0; i < taskList.size(); i++) {
+//        vector<int> children;
+//        vector<int> parents;
+//        for (const auto &item: taskList[i].m_in_edges)
+//            parents.push_back(item.m_target);
+//
+//        for (const auto &item: taskList[i].m_out_edges)
+//            children.push_back(item.m_target);
+//
+//        critical_path_list.push_back({taskList[i].m_property.task.get().getId(), i, 0, 0, 0, 0, children, parents,
+//                                      taskList[i].m_property.task.get().getMillionsOfInstructions()});
+//    }
+//
+//    critical_path_list = EarliestMetricCalculator(critical_path_list);
+//    critical_path_list = LatestMetricCalculator(critical_path_list);
 
-    for (int i = 0; i < taskList.size(); i++) {
-        vector<int> children;
-        vector<int> parents;
-        for (const auto &item: taskList[i].m_in_edges)
-            parents.push_back(item.m_target);
+    vector<TempTask*> finished_list;
+    vector<TempTask*> inProgress;
+    vector<TempTask> task_list;
+    float time = 0.0f;
 
-        for (const auto &item: taskList[i].m_out_edges)
-            children.push_back(item.m_target);
+    for(const auto& task: taskList) {
+        Task tempTask = task.m_property.task.get();
+        std::vector<int> parents;
+        std::transform(std::begin(task.m_in_edges), std::end(task.m_in_edges), std::begin(parents), [](auto index) -> int{
+            return index;
+        });
 
-        critical_path_list.push_back({taskList[i].m_property.task.get().getId(), i, 0, 0, 0, 0, children, parents,
-                                      taskList[i].m_property.task.get().getMillionsOfInstructions()});
+        std::vector<int> children;
+        std::transform(std::begin(task.m_out_edges), std::end(task.m_out_edges), std::begin(children), [](auto index) -> int{
+            return index;
+        });
+
+        task_list.push_back({parents, children, &tempTask, false, false});
     }
 
-    critical_path_list = EarliestMetricCalculator(critical_path_list);
-    critical_path_list = LatestMetricCalculator(critical_path_list);
-    float total_time = critical_path_list[critical_path_list.size() - 1].eet / super_node_MI;
-    return total_time;
-}
+    while(finished_list.size() != task_list.size()){
+        if(!inProgress.empty()){
+            inProgress[0]->finished = true;
+            time = inProgress[0]->finish_time;
+            finished_list.push_back(inProgress[0]);
+            inProgress.erase(inProgress.begin());
+        }
 
-ApplicationTopology ApplicationTopologyServices::generateNavigator(int source_mobile_id) {
-    Task rootTask("CONF_PANEL", 1, 1, 5, 5, 1, source_mobile_id, false, 1);
-    Task gpsTask("GPS", 1, 3, 5, 5, 5, source_mobile_id, true, 1);
-    Task controlTask("CONTROL", 2, 3, 5, 5, 1, source_mobile_id, true, 1);
-    Task mapsTask("MAPS", 3, 5, 50, 50, 5, source_mobile_id, true, 1);
-    Task pathCalcTask("PATH_CALC", 5, 2, 50, 50, 5, source_mobile_id, true, 1);
-    Task trafficTask("TRAFFIC", 5, 1, 50, 50, 5, source_mobile_id, true, 1);
-    Task voiceSynthTask("VOICE_SYNTH", 2, 1, 5, 20, 5, source_mobile_id, true, 1);
-    Task guiTask("GUI", 2, 1, 5, 20, 5, source_mobile_id, true, 1);
-    Task speedTrapTask("SPEED_TRAP", 2, 1, 10, 10, 5, source_mobile_id, true, 1);
+        for(int i = 0; i < task_list.size(); i++){
+            if(task_list[i].offloaded || task_list[i].finished)
+                continue;
 
-    ApplicationTopology a;
+            bool ready = true;
+            for(int index: task_list[i].parents){
+                if(!task_list[index].finished) {
+                    ready = false;
+                    break;
+                }
+            }
 
-    auto v1 = add_vertex({rootTask}, a);
-    auto v2 = add_vertex({gpsTask}, a);
-    auto v3 = add_vertex({controlTask}, a);
-    auto v4 = add_vertex({mapsTask}, a);
-    auto v5 = add_vertex({pathCalcTask}, a);
-    auto v6 = add_vertex({trafficTask}, a);
-    auto v7 = add_vertex({voiceSynthTask}, a);
-    auto v8 = add_vertex({guiTask}, a);
-    auto v9 = add_vertex({speedTrapTask}, a);
+            if(ready && super_node.total_ram_usage + task_list[i].task->getRam() <= super_node.total_ram){
+                bool add = false;
+                if(super_node.cloud_edge_usage + 1 <= super_node.cloud_edge_gpu_cap && !task_list[i].task->isOffload()){
+                    task_list[i].allocated_node = node_type::cloud;
+                    add = true;
+                }
+                else if (super_node.mobile_usage + 1 <= super_node.mobile_gpu_cap){
+                    task_list[i].allocated_node = node_type::mobile;
+                    add = true;
+                }
+                if(add){
+                    task_list[i].finish_time = time + task_list[i].task->getProcessTime(task_list[i].allocated_node);
+                    super_node.addTask(task_list[i]);
+                    int index = 0;
+                    for(;index < inProgress.size() && task_list[i].finish_time < inProgress[index]->finish_time; index++);
+                    task_list[i].offloaded = true;
+                    inProgress.insert(inProgress.begin() + index, &task_list[i]);
+                }
+            }
+        }
 
-    auto e1 = add_edge(v1, v3, 1, a);
-    auto e2 = add_edge(v2, v3, 1, a);
-    auto e3 = add_edge(v3, v4, 1, a);
-    auto e4 = add_edge(v3, v5, 1, a);
-    auto e5 = add_edge(v3, v6, 1, a);
-    auto e6 = add_edge(v4, v5, 1, a);
-    auto e7 = add_edge(v6, v5, 1, a);
-    auto e8 = add_edge(v5, v7, 1, a);
-    auto e9 = add_edge(v5, v8, 1, a);
-    auto e10 = add_edge(v5, v9, 1, a);
-
-    return a;
-}
-
-ApplicationTopology ApplicationTopologyServices::generateChessApp(int source_mobile_id) {
-    Task guiTask("GUI", 4, 1, 5, 5, 1, source_mobile_id, false, 1);
-    Task updateChessTask("UPDATE_CHESS", 2, 1, 5, 5, 1, source_mobile_id, true, 1);
-    Task computeMovesTask("COMPUTE_MOVES", 2, 1, 5, 5, 1, source_mobile_id, true, 4);
-    Task outputTask("OUTPUT_TASK", 2, 1, 5, 5, 1, source_mobile_id, false, 1);
-
-    ApplicationTopology a;
-
-    auto v1 = add_vertex({guiTask}, a);
-    auto v2 = add_vertex({updateChessTask}, a);
-    auto v3 = add_vertex({computeMovesTask}, a);
-    auto v4 = add_vertex({outputTask}, a);
-
-    auto e1 = add_edge(v1, v2, 1, a);
-    auto e2 = add_edge(v2, v3, 1, a);
-    auto e3 = add_edge(v3, v4, 1, a);
-
-    return a;
+    }
+    return time;
 }
 
 vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
@@ -194,7 +200,6 @@ ApplicationTopologyServices::getVertices(ApplicationTopology &application) {
 
     return res;
 }
-
 
 void ApplicationTopologyServices::logInfo(ApplicationTopology &application) {
     pair<application_edge_iterator, application_edge_iterator> ei = edges(application);
@@ -217,5 +222,4 @@ void ApplicationTopologyServices::logInfo(ApplicationTopology &application) {
              << " Out Edge count: " << application.m_vertices[*iter].m_out_edges.size() << endl
              << endl;
     }
-
 }

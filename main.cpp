@@ -163,26 +163,7 @@ void main::logResults(const vector<TaskMapping> &finished, char* output_filename
  * @return - Time derived from the millions of instructions / millions of instructions per second.
  */
 float main::calculateProcessingTime(TaskVertexData task, NetworkVertexData node) {
-    float mi = 0.0f;
-    float mips = 0.0f;
-    switch (node.type) {
-        case cloud:
-            mi += task.task->getMillionsOfInstructions();
-            mips += node.comp->getMillionsInstructionsPerCore();
-            break;
-        case mobile:
-            mi += task.task->getMillionsOfInstructions();
-            mips += node.mobileNode->getMillionsInstructionsPerCore();
-            break;
-        case node_type::edge:
-            mi += task.task->getMillionsOfInstructions();
-            mips += node.edgeNode->getMillionsInstructionsPerCore();
-            break;
-        default:
-            break;
-    }
-    float res = (mi / mips);
-    return res;
+    return task.task->getProcessTime(node.type);
 }
 
 /**

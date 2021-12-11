@@ -9,6 +9,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <Models/VertexData/NetworkVertexData.h>
 #include <Models/VertexData/EdgePropertyData.h>
+#include <Models/Mappings/SuperNode.h>
 
 using namespace boost;
 
@@ -30,7 +31,7 @@ public:
 
     static float getBandwidth(int source, int destination, NetworkTopology &network);
 
-    static int getSuperNodeMI(std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> networkVertexList);
+    static SuperNode getSuperNode(std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> networkVertexList);
 
     static std::vector<std::pair<float, float>> getActiveUploads(int source, int destination, float start_time, NetworkTopology& g);
 

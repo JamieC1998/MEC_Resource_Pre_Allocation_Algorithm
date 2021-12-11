@@ -7,32 +7,6 @@
 
 int Task::task_id_counter = 0;
 
-Task::Task(const std::string &name, unsigned long long int millionsOfInstructions, float ram, unsigned int dataIn,
-           unsigned int dataOut, float storage, int sourceMobileId, bool canOffload, int coreCount) : name(name),
-                                                                                                             millions_of_instructions(
-                                                                                                                     millionsOfInstructions),
-                                                                                                             ram(ram),
-                                                                                                             data_in(dataIn),
-                                                                                                             data_out(
-                                                                                                                     dataOut),
-                                                                                                             storage(storage),
-                                                                                                             source_mobile_id(
-                                                                                                                     sourceMobileId),
-                                                                                                             offload(canOffload),
-                                                                                                             id(task_id_counter),
-                                                                                                             core_count(
-                                                                                                                     coreCount) {
-    Task::task_id_counter++;
-}
-
-unsigned long long int Task::getMillionsOfInstructions() const {
-    return millions_of_instructions;
-}
-
-void Task::setMillionsOfInstructions(unsigned long long int millionsOfInstructions) {
-    millions_of_instructions = millionsOfInstructions;
-}
-
 float Task::getRam() const {
     return ram;
 }
@@ -72,7 +46,6 @@ void Task::setName(const std::string &name) {
 std::ostream &operator<<(std::ostream &os, const Task &task) {
     return (os << " Name: " << task.getName()
                << "\n RAM: " << task.getRam()
-               << "\n MI: " << task.getMillionsOfInstructions()
                << "\n CORES: " << task.getCoreCount()
                << "\n Data in: " << task.getDataIn()
                << "\n Data out: " << task.getDataOut()
@@ -123,4 +96,14 @@ int Task::getId() const {
 
 int Task::getCoreCount() const {
     return core_count;
+}
+
+float Task::getProcessTime(node_type nodeType) {
+    if (nodeType == node_type::cloud)
+        return this->process_time_cloud;
+    else if (nodeType == node_type::edge)
+        return this->process_time_edge;
+    else if (nodeType == node_type::mobile)
+        return this->process_time_mobile;
+    return process_time_mobile;
 }

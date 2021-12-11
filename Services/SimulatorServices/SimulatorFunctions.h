@@ -16,7 +16,7 @@ public:
     static void checkIncomingApplications(
             std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>> *total_task_list,
             std::vector<ApplicationEvent> *applications, float current_time, std::vector<float> &lower_bound_times,
-            int super_node_MI);
+            const SuperNode& super_node);
 
     static void UpdateEventList(std::vector<TaskMapping> &inProgress, std::vector<TaskMapping> &finished, float &time,
                                 std::vector<ReservationMapping> reservationQueue, float completion_time,

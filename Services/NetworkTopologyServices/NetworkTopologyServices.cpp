@@ -9,6 +9,7 @@
 #include <Models/MobileNode/MobileNode.h>
 #include <Models/VertexData/NetworkVertexData.h>
 #include <Models/Mappings/TaskMapping.h>
+#include <Models/Mappings/SuperNode.h>
 
 using namespace std;
 
@@ -68,10 +69,11 @@ NetworkTopologyServices::getActiveUploads(int source, int destination, float sta
 }
 
 void
-NetworkTopologyServices::addUploadsToLink(const std::pair<std::vector<pair<float, float>>, std::vector<TaskMapping>> &parentList,
-                                          int destination_node,
-                                          NetworkTopology &network,
-                                          std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
+NetworkTopologyServices::addUploadsToLink(
+        const std::pair<std::vector<pair<float, float>>, std::vector<TaskMapping>> &parentList,
+        int destination_node,
+        NetworkTopology &network,
+        std::unordered_map<int, std::unordered_map<int, EdgePropertyData>> &map) {
 
     for (int i = 0; i < parentList.first.size(); i++) {
         int parentNode = parentList.second[i].nodeIndex;
@@ -104,7 +106,7 @@ NetworkTopologyServices::findLinkSlot(std::vector<std::pair<float, float>> occup
 
     pair<float, float> res = make_pair(start_time, start_time + duration);
 
-    if(occupancy_times.size() > 3 && bandwidth == 10)
+    if (occupancy_times.size() > 3 && bandwidth == 10)
         cout << "WOW";
 
     sort(occupancy_times.begin(), occupancy_times.end(),
@@ -116,15 +118,14 @@ NetworkTopologyServices::findLinkSlot(std::vector<std::pair<float, float>> occup
         if (occupancy_times[i].second < start_time)
             continue;
 
-        if(i < occupancy_times.size() - 1){
+        if (i < occupancy_times.size() - 1) {
             float time_window = (occupancy_times[i + 1].first - 0.00001f) - occupancy_times[i].second + 0.00001f;
-            if(duration <= time_window){
+            if (duration <= time_window) {
                 res.first = occupancy_times[i].second + 0.00001f;
                 res.second = res.first + duration;
                 break;
             }
-        }
-        else{
+        } else {
             res.first = occupancy_times[i].second + 0.00001f;
             res.second = res.first + duration;
             break;
@@ -157,11 +158,11 @@ NetworkTopologyServices::generateEdgeMap(NetworkTopology &network, int node_coun
 }
 
 NetworkTopology NetworkTopologyServices::generateNetwork() {
-    ComputationNode cloudNodeA(INT_MAX, 15, INT_MAX, INT_MAX, cloud);
-    EdgeNode edgeNode(16, 10, 64, 8000, node_type::edge, make_pair(1, 1));
-    MobileNode mobileNode(4, 5, 8, 16, mobile, make_pair(2, 2));
-    EdgeNode edgeNodeB(16, 10, 64, 8000, node_type::edge, make_pair(1, 1));
-    EdgeNode edgeNodeC(16, 10, 64, 8000, node_type::edge, make_pair(1, 1));
+    ComputationNode cloudNodeA(INT_MAX, INT_MAX, INT_MAX, cloud);
+    EdgeNode edgeNode(16, 64, 8000, node_type::edge, make_pair(1, 1));
+    MobileNode mobileNode(4, 8, 16, mobile, make_pair(2, 2));
+    EdgeNode edgeNodeB(16, 64, 8000, node_type::edge, make_pair(1, 1));
+    EdgeNode edgeNodeC(16, 64, 8000, node_type::edge, make_pair(1, 1));
 
     NetworkTopology g;
 
@@ -217,9 +218,11 @@ NetworkTopologyServices::getVertices(NetworkTopology &network) {
     return res;
 }
 
-int NetworkTopologyServices::getSuperNodeMI(
+SuperNode NetworkTopologyServices::getSuperNode(
         std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> networkVertexList) {
-    int res = 0;
+    std::unordered_map<string, float> res;
+
+    SuperNode superNode;
 
     for (auto vert: networkVertexList) {
         ComputationNode &node = (vert.m_property.type == mobile) ? vert.m_property.mobileNode.get()
@@ -227,7 +230,9 @@ int NetworkTopologyServices::getSuperNodeMI(
                                                                     cloud)
                                                                    ? vert.m_property.comp.get()
                                                                    : vert.m_property.edgeNode.get();
-        res += node.getMillionsInstructionsPerCore();
+
+        superNode.addCapacity(node.getType());
+        superNode.total_ram += node.getRam();
     }
-    return res;
+    return superNode;
 }

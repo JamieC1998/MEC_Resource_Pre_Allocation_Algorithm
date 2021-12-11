@@ -8,19 +8,14 @@
 
 int ComputationNode::id_counter = 0;
 
-ComputationNode::ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram,
-                                 float storage, node_type type)
-        : cores(cores), millions_instructions_per_core(millionsInstructionsPerCore), ram(ram), storage(storage),
+ComputationNode::ComputationNode(int gpu_count, float ram, float storage, node_type type)
+        : gpu_count(gpu_count), ram(ram), storage(storage),
           type(type), is_free(true), id(id_counter) {
     id_counter++;
 }
 
-int ComputationNode::getCores() const {
-    return cores;
-}
-
-unsigned long long int ComputationNode::getMillionsInstructionsPerCore() const {
-    return millions_instructions_per_core;
+int ComputationNode::getGPU_Count() const {
+    return gpu_count;
 }
 
 float ComputationNode::getRam() const {
@@ -44,7 +39,7 @@ bool ComputationNode::isFree() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const ComputationNode &cN) {
-    return (os << " Cores: " << cN.getCores() << "\n MIPS: " << cN.getMillionsInstructionsPerCore() << "\n Storage: "
+    return (os << " Cores: " << cN.getGPU_Count() << << "\n Storage: "
                << cN.getStorage() << "\n RAM: " << cN.getRam() << "\n Type: " << cN.printType() << "\n Free: "
                << cN.isFree() << "\n ID: " << cN.getId() << std::endl);
 }
