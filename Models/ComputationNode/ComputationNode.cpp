@@ -39,7 +39,7 @@ bool ComputationNode::isFree() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const ComputationNode &cN) {
-    return (os << " Cores: " << cN.getGPU_Count() << << "\n Storage: "
+    return (os << " Cores: " << cN.getGPU_Count() << "\n Storage: "
                << cN.getStorage() << "\n RAM: " << cN.getRam() << "\n Type: " << cN.printType() << "\n Free: "
                << cN.isFree() << "\n ID: " << cN.getId() << std::endl);
 }

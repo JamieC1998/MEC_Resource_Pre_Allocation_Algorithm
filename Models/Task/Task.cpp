@@ -98,7 +98,7 @@ int Task::getCoreCount() const {
     return core_count;
 }
 
-float Task::getProcessTime(node_type nodeType) {
+float Task::getProcessTime(node_type nodeType){
     if (nodeType == node_type::cloud)
         return this->process_time_cloud;
     else if (nodeType == node_type::edge)
@@ -106,4 +106,10 @@ float Task::getProcessTime(node_type nodeType) {
     else if (nodeType == node_type::mobile)
         return this->process_time_mobile;
     return process_time_mobile;
+}
+
+Task::Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile,
+           float ram, unsigned int dataIn, unsigned int dataOut, float storage, int source_mobile_id, bool can_offload,
+           int coreCount) {
+
 }

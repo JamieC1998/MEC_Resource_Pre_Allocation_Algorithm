@@ -14,34 +14,34 @@ const float INSTRUCTION_SIZE_MEGABYTES = 0.000002;
 class Task {
 private:
     static int task_id_counter;
-    int id;
+    int id{};
 
     std::string name;
 
-    int source_mobile_id;
+    int source_mobile_id{};
 
     //Gigabytes
-    float ram;
+    float ram{};
 
     //Megabytes
-    unsigned int data_in;
+    unsigned int data_in{};
 
     //Megabytes
-    unsigned int data_out;
+    unsigned int data_out{};
 
     //Megabytes
-    float storage;
+    float storage{};
 
     int core_count = 0;
     bool done = false;
     bool in_progress = false;
 
     //True means it can be offloaded, false must be processed on source
-    bool offload;
+    bool offload{};
 
-    float process_time_cloud;
-    float process_time_edge;
-    float process_time_mobile;
+    float process_time_cloud{};
+    float process_time_edge{};
+    float process_time_mobile{};
 
 public:
     Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile, float ram, unsigned int dataIn,

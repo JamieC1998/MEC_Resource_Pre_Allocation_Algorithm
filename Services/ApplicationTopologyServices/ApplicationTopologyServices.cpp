@@ -34,8 +34,11 @@ ApplicationTopology ApplicationTopologyServices::generateApplications(
         auto &application = item.second[j];
         vector<string> strL = application.first;
         vector<string> edgeL = application.second;
-        Task generated_task(strL[0], stof(strL[1]), stof(strL[2]), stof(strL[3]), stof(strL[4]), stoi(strL[5]), stoi(strL[6]),
+        Task generated_task = Task(strL[0], stof(strL[1]), stof(strL[2]), stof(strL[3]), stof(strL[4]), stoi(strL[5]), stoi(strL[6]),
                             stoi(strL[7]), source_mobile_id, stoi(strL[8]), stoi(strL[9]));
+
+//        Task generated_task = Task("a", 0, stof(strL[2]), stof(strL[3]), stof(strL[4]), stoi(strL[5]), stoi(strL[6]),
+//                                   stoi(strL[7]), source_mobile_id, stoi(strL[8]), stoi(strL[9]));
 
         add_vertex({generated_task}, a);
 
@@ -131,13 +134,13 @@ float ApplicationTopologyServices::calculateLowerBound(
     for(const auto& task: taskList) {
         Task tempTask = task.m_property.task.get();
         std::vector<int> parents;
-        std::transform(std::begin(task.m_in_edges), std::end(task.m_in_edges), std::begin(parents), [](auto index) -> int{
-            return index;
+        std::transform(std::begin(task.m_in_edges), std::end(task.m_in_edges), std::begin(parents), [](boost::detail::stored_edge_iter<long unsigned int, std::_List_iterator<boost::list_edge<long unsigned int, boost::property<boost::edge_weight_t, int> > >, boost::property<boost::edge_weight_t, int>> index) -> int{
+            return (int) index.m_target;
         });
 
         std::vector<int> children;
-        std::transform(std::begin(task.m_out_edges), std::end(task.m_out_edges), std::begin(children), [](auto index) -> int{
-            return index;
+        std::transform(std::begin(task.m_out_edges), std::end(task.m_out_edges), std::begin(children), [](boost::detail::stored_edge_iter<long unsigned int, std::_List_iterator<boost::list_edge<long unsigned int, boost::property<boost::edge_weight_t, int> > >, boost::property<boost::edge_weight_t, int>> index) -> int{
+            return (int) index.m_target;
         });
 
         task_list.push_back({parents, children, &tempTask, false, false});

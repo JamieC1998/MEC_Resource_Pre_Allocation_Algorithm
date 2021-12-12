@@ -7,7 +7,7 @@
 
 
 EdgeNode::EdgeNode(int gpu_count, float ram, float storage,
-                   node_type type, const std::pair<double, double> &coords) : ComputationNode(cores,
+                   node_type type, const std::pair<double, double> &coords) : ComputationNode(gpu_count,
                                                                                               ram, storage, type),
                                                                               coords(coords) {}
 
