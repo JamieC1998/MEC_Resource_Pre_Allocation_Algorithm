@@ -126,7 +126,7 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
     else {
         if ((max_ram_usage + task.getRam()) > node.getRam())
             return false;
-        if ((max_storage_usage + task.getStorage()) > node.getStorage())
+        if ((max_storage_usage + task.getStorage()) / 1000 > node.getStorage())
             return false;
         if ((max_core_usage + 1) > node.getGPU_Count())
             return false;
