@@ -38,7 +38,7 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
         if (timeWindow.first <= item.timeWindow.second && item.timeWindow.first <= timeWindow.second) {
             for (int i = 0; i < 2; i++) {
                 resource_events.push_back({
-                                                  tempTask.getCoreCount(),
+                                                  1,
                                                   tempTask.getRam(),
                                                   tempTask.getStorage(),
                                                   (bool) i,
@@ -56,7 +56,7 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
         if (timeWindow.first <= item.timeWindow.second && item.timeWindow.first <= timeWindow.second) {
             for (int i = 0; i < 2; i++) {
                 resource_events.push_back({
-                                                  tempTask.getCoreCount(),
+                                                  1,
                                                   tempTask.getRam(),
                                                   tempTask.getStorage(),
                                                   (bool) i,
@@ -109,9 +109,10 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
         else {
             if ((max_ram_usage + task.getRam()) > node.getRam())
                 return false;
-            if ((max_storage_usage + task.getStorage()) > node.getStorage())
+//            float storage = task.getStorage() / 1000;
+            if ((max_storage_usage + task.getStorage()) / 1000 > node.getStorage())
                 return false;
-            if ((max_core_usage + task.getCoreCount()) > node.getGPU_Count())
+            if ((max_core_usage + 1) > node.getGPU_Count())
                 return false;
         }
     }
@@ -127,7 +128,7 @@ bool SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &
             return false;
         if ((max_storage_usage + task.getStorage()) > node.getStorage())
             return false;
-        if ((max_core_usage + task.getCoreCount()) > node.getGPU_Count())
+        if ((max_core_usage + 1) > node.getGPU_Count())
             return false;
     }
     return true;
@@ -233,7 +234,7 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
 
     startTime = ot_up;
 
-    return rt_local + ot_up;
+    return rt_local + ot_up + 0.001f;
 }
 
 vector<pair<int, bool>> SimulatorFunctions::processReadyTasks(

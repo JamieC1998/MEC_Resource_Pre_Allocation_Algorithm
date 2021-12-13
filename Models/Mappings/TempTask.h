@@ -11,7 +11,7 @@
 struct TempTask {
     std::vector<int> parents;
     std::vector<int> children;
-    Task* task;
+    Task task;
     float finish_time = 0.0f;
     bool offloaded;
     bool finished;

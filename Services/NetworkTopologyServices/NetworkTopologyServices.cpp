@@ -159,10 +159,10 @@ NetworkTopologyServices::generateEdgeMap(NetworkTopology &network, int node_coun
 
 NetworkTopology NetworkTopologyServices::generateNetwork() {
     ComputationNode cloudNodeA(INT_MAX, INT_MAX, INT_MAX, cloud);
-    EdgeNode edgeNode(16, 64, 8000, node_type::edge, make_pair(1, 1));
-    MobileNode mobileNode(4, 8, 16, mobile, make_pair(2, 2));
-    EdgeNode edgeNodeB(16, 64, 8000, node_type::edge, make_pair(1, 1));
-    EdgeNode edgeNodeC(16, 64, 8000, node_type::edge, make_pair(1, 1));
+    EdgeNode edgeNode(2 * SERVERS_PER_CLOUDLET, 64 * SERVERS_PER_CLOUDLET, 1000 * SERVERS_PER_CLOUDLET, node_type::edge, make_pair(1, 1));
+    MobileNode mobileNode(1, 8, 128, mobile, make_pair(2, 2));
+    EdgeNode edgeNodeB(2 * SERVERS_PER_CLOUDLET, 64 * SERVERS_PER_CLOUDLET, 1000 * SERVERS_PER_CLOUDLET, node_type::edge, make_pair(1, 1));
+    EdgeNode edgeNodeC(2 * SERVERS_PER_CLOUDLET, 64 * SERVERS_PER_CLOUDLET, 1000 * SERVERS_PER_CLOUDLET, node_type::edge, make_pair(1, 1));
 
     NetworkTopology g;
 
@@ -234,5 +234,6 @@ SuperNode NetworkTopologyServices::getSuperNode(
         superNode.addCapacity(node.getType());
         superNode.total_ram += node.getRam();
     }
+    superNode.cloud_edge_gpu_cap = INT_MAX;
     return superNode;
 }

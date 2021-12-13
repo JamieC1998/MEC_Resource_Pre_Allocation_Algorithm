@@ -40,7 +40,7 @@ struct SuperNode {
         for(; index < task_list.size() && task_list[index].finish_time > task.finish_time; index++);
         task_list.insert(begin(task_list) + index, task);
 
-        total_ram_usage += task.task->getRam();
+        total_ram_usage += task.task.getRam();
     }
 
     void removeTask(TempTask task){
@@ -54,9 +54,9 @@ struct SuperNode {
         }
 
         int index = 0;
-        for(; index < task_list.size() && task_list[index].task->getId() != task.task->getId(); index++);
+        for(; index < task_list.size() && task_list[index].task.getId() != task.task.getId(); index++);
 
-        total_ram_usage -= task.task->getRam();
+        total_ram_usage -= task.task.getRam();
     }
 };
 
