@@ -218,7 +218,7 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
     ot_up += current_time;
 
     for (auto & parent : parents) {
-        float parent_upload_start = (parent.absoluteFinish + 0.00001f < current_time) ? current_time : parent.absoluteFinish + 0.00001f;
+        float parent_upload_start = (parent.absoluteFinish + 0.0001f < current_time) ? current_time : parent.absoluteFinish + 0.0001f;
         pair<float, float> time_window = make_pair(-1, parent_upload_start);
         if(parent.nodeIndex != currentNodeIndex){
             EdgePropertyData &edge = (parent.nodeIndex < currentNodeIndex) ? map.at(parent.nodeIndex).at(currentNodeIndex) : map.at(currentNodeIndex).at(parent.nodeIndex);
