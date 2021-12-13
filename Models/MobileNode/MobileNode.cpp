@@ -5,10 +5,9 @@
 #include <sstream>
 #include "MobileNode.h"
 
-MobileNode::MobileNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
+MobileNode::MobileNode(int cores, float ram, float storage,
                        node_type type, const std::pair<double, double> &coords)
         : EdgeNode(cores,
-                   millionsInstructionsPerCore,
                    ram, storage,
                    type, coords) {}
 
@@ -21,7 +20,7 @@ void MobileNode::setBattery(int battery) {
 }
 
 std::ostream &operator<<(std::ostream &os, const MobileNode &mN) {
-    return (os << " Cores: " << mN.getCores() << "\n MIPS: " << mN.getMillionsInstructionsPerCore() << "\n Storage: "
+    return (os << " Cores: " << mN.getCores() << "\n Storage: "
                << mN.getStorage() << "\n RAM: " << mN.getRam() << "\n Type: " << mN.printType() << "\n Free: "
                << mN.isFree() << "\n Coords: ( "
                << mN.getCoords().first << ", " << mN.getCoords().second << ")" << "\n Battery: " << mN.getBattery()

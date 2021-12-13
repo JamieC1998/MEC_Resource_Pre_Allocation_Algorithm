@@ -21,7 +21,6 @@ private:
     int id;
 
     int cores;
-    unsigned long long int millions_instructions_per_core;
 
     //Gigabytes
     float ram;
@@ -35,7 +34,7 @@ private:
     bool is_free;
 
 public:
-    ComputationNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage,
+    ComputationNode(int cores, float ram, float storage,
                     node_type type);
     int getId() const;
 
@@ -46,8 +45,6 @@ public:
     std::string to_string();
 
     int getCores() const;
-
-    unsigned long long int getMillionsInstructionsPerCore() const;
 
     float getRam() const;
 

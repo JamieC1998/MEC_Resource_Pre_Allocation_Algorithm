@@ -18,8 +18,8 @@ ApplicationTopology ApplicationTopologyServices::generateApplications(
         auto &application = item.second[j];
         vector<string> strL = application.first;
         vector<string> edgeL = application.second;
-        Task generated_task(strL[0], stoi(strL[1]), stof(strL[2]), stoi(strL[3]), stoi(strL[4]),
-                            stoi(strL[5]), source_mobile_id, stoi(strL[6]), stoi(strL[7]));
+        Task generated_task = Task(strL[0], stof(strL[1]), stof(strL[2]), stof(strL[3]), stof(strL[4]), stoi(strL[5]) * 0.000001, stoi(strL[6]) * 0.000001,
+                                   stoi(strL[7]) * 0.000001, source_mobile_id, stoi(strL[8]));
 
         add_vertex({generated_task}, a);
 
@@ -27,63 +27,6 @@ ApplicationTopology ApplicationTopologyServices::generateApplications(
             add_edge(stoi(i), j, 1, a);
 
     }
-
-    return a;
-}
-
-ApplicationTopology ApplicationTopologyServices::generateNavigator(int source_mobile_id) {
-    Task rootTask("CONF_PANEL", 1, 1, 5, 5, 1, source_mobile_id, false, 1);
-    Task gpsTask("GPS", 1, 3, 5, 5, 5, source_mobile_id, true, 1);
-    Task controlTask("CONTROL", 2, 3, 5, 5, 1, source_mobile_id, true, 1);
-    Task mapsTask("MAPS", 3, 5, 50, 50, 5, source_mobile_id, true, 1);
-    Task pathCalcTask("PATH_CALC", 5, 2, 50, 50, 5, source_mobile_id, true, 1);
-    Task trafficTask("TRAFFIC", 5, 1, 50, 50, 5, source_mobile_id, true, 1);
-    Task voiceSynthTask("VOICE_SYNTH", 2, 1, 5, 20, 5, source_mobile_id, true, 1);
-    Task guiTask("GUI", 2, 1, 5, 20, 5, source_mobile_id, true, 1);
-    Task speedTrapTask("SPEED_TRAP", 2, 1, 10, 10, 5, source_mobile_id, true, 1);
-
-    ApplicationTopology a;
-
-    auto v1 = add_vertex({rootTask}, a);
-    auto v2 = add_vertex({gpsTask}, a);
-    auto v3 = add_vertex({controlTask}, a);
-    auto v4 = add_vertex({mapsTask}, a);
-    auto v5 = add_vertex({pathCalcTask}, a);
-    auto v6 = add_vertex({trafficTask}, a);
-    auto v7 = add_vertex({voiceSynthTask}, a);
-    auto v8 = add_vertex({guiTask}, a);
-    auto v9 = add_vertex({speedTrapTask}, a);
-
-    auto e1 = add_edge(v1, v3, 1, a);
-    auto e2 = add_edge(v2, v3, 1, a);
-    auto e3 = add_edge(v3, v4, 1, a);
-    auto e4 = add_edge(v3, v5, 1, a);
-    auto e5 = add_edge(v3, v6, 1, a);
-    auto e6 = add_edge(v4, v5, 1, a);
-    auto e7 = add_edge(v6, v5, 1, a);
-    auto e8 = add_edge(v5, v7, 1, a);
-    auto e9 = add_edge(v5, v8, 1, a);
-    auto e10 = add_edge(v5, v9, 1, a);
-
-    return a;
-}
-
-ApplicationTopology ApplicationTopologyServices::generateChessApp(int source_mobile_id) {
-    Task guiTask("GUI", 4, 1, 5, 5, 1, source_mobile_id, false, 1);
-    Task updateChessTask("UPDATE_CHESS", 2, 1, 5, 5, 1, source_mobile_id, true, 1);
-    Task computeMovesTask("COMPUTE_MOVES", 2, 1, 5, 5, 1, source_mobile_id, true, 4);
-    Task outputTask("OUTPUT_TASK", 2, 1, 5, 5, 1, source_mobile_id, false, 1);
-
-    ApplicationTopology a;
-
-    auto v1 = add_vertex({guiTask}, a);
-    auto v2 = add_vertex({updateChessTask}, a);
-    auto v3 = add_vertex({computeMovesTask}, a);
-    auto v4 = add_vertex({outputTask}, a);
-
-    auto e1 = add_edge(v1, v2, 1, a);
-    auto e2 = add_edge(v2, v3, 1, a);
-    auto e3 = add_edge(v3, v4, 1, a);
 
     return a;
 }

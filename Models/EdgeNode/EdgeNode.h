@@ -15,7 +15,7 @@ private:
     std::pair<double, double> coords = std::make_pair(0, 0);
 
 public:
-    EdgeNode(int cores, unsigned long long int millionsInstructionsPerCore, float ram, float storage, node_type type,
+    EdgeNode(int cores, float ram, float storage, node_type type,
              const std::pair<double, double> &coords);
 
     friend std::ostream& operator << (std::ostream &os, const EdgeNode &eN);

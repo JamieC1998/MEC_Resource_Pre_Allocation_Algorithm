@@ -38,7 +38,7 @@ SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &vt, s
         if (timeWindow.first <= item.timeWindow.second && item.timeWindow.first <= timeWindow.second) {
             for (int i = 0; i < 2; i++) {
                 resource_events.push_back({
-                                                  tempTask.getCoreCount(),
+                                                  1,
                                                   tempTask.getRam(),
                                                   tempTask.getStorage(),
                                                   (bool) i,
@@ -93,7 +93,7 @@ SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &vt, s
                 return false;
             if ((max_storage_usage + task.getStorage()) > node.getStorage())
                 return false;
-            if ((max_core_usage + task.getCoreCount()) > node.getCores())
+            if ((max_core_usage + 1) > node.getCores())
                 return false;
         }
     }
@@ -109,7 +109,7 @@ SimulatorFunctions::isValidNode(const Task &task, const NetworkVertexData &vt, s
             return false;
         if ((max_storage_usage + task.getStorage()) > node.getStorage())
             return false;
-        if ((max_core_usage + task.getCoreCount()) > node.getCores())
+        if ((max_core_usage + 1) > node.getCores())
             return false;
     }
     return true;
@@ -192,7 +192,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
                                      : networkList[currentNodeIndex].m_property.edgeNode.get();
 
 
-    float rt_local = (float) task.getMillionsOfInstructions() / (float) current_node.getMillionsInstructionsPerCore();
+    float rt_local = (float) task.getProcessTime(current_node.getType()) + 0.001;
 
     //If the task is not allowed to be offloaded and this is the source task we do not need to calculate bandwidth
     //as there's no data to transfer
