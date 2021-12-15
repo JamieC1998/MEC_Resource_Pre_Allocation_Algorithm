@@ -204,10 +204,8 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
     float ot_up = current_time;
 
     EdgePropertyData &edge = edge_map.at(source_node_index).at(currentNodeIndex);
-    float ot_down = 0;
+    float ot_down = ot_up + rt_local;
     if(current_node.getType() != node_type::mobile) {
-        if(task.getName() == "17_inception_v3_Mixed_5b/Branch_1/Conv2d_0b_5x5" && current_node.getId() == 4)
-            cout << endl;
         for (float upload_time : upload_times) {
             pair<float, float> window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, current_time,
                                                                               upload_time, bandwidth, edge.latency);
