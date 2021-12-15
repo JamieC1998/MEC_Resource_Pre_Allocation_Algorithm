@@ -285,9 +285,23 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
     (const_cast<vector<struct NodeMapping> &>(node.getTaskVector())).push_back(
             {selectedTask.task.get(), make_pair(selectedNodeData.second.first, selectedNodeData.second.second)});
 
+    float uploadStart = INT_MAX;
+    float uploadFinish = -1;
+    for (auto & parent_result_upload_window : data_transfer_times) {
+        if (uploadStart > parent_result_upload_window.first && parent_result_upload_window.first != -1)
+            uploadStart = parent_result_upload_window.first;
+        if (uploadFinish < parent_result_upload_window.second && parent_result_upload_window.second >= selectedNodeData.second.second)
+            uploadFinish = parent_result_upload_window.second;
+    }
+
+    if(node.getType() == node_type::mobile) {
+        uploadFinish = selectedNodeData.second.second;
+        uploadStart = time;
+    }
+
     inProgress->push_back(
             {time, selectedNodeData.first.second, selectedTask, selectedNode, selectedNodeData.second.first,
-             selectedNodeData.second.second});
+             selectedNodeData.second.second, uploadStart, uploadFinish});
 
     NetworkTopologyServices::addUploadsToLink(data_transfer_times, 0, selectedNodeData.first.first, network, map);
 }
