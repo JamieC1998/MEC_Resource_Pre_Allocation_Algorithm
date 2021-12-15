@@ -269,6 +269,7 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
     if (selectedNodeData.first.first == -1)
         return;
 
+
     auto &selectedNode = networkVertexList[selectedNodeData.first.first].m_property;
 
     selectedTask.task.get().setInProgress(true);

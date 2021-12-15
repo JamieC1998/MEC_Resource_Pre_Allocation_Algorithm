@@ -138,6 +138,8 @@ void main::logResults(const vector<TaskMapping> &finished, char* output_filename
 
         myfile << endl << "START TIME: " << i.processStartTime << endl;
         myfile << "FINISH TIME: " << i.processFinishTime << endl;
+        myfile << endl << "UPLOAD START TIME: " << i.absoluteStart << endl;
+        myfile << "UPLOAD FINISH TIME: " << i.absoluteFinish << endl;
     }
     myfile.close();
     cout << output_filename;
