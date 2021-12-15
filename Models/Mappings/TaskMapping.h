@@ -16,6 +16,8 @@ struct TaskMapping {
     std::reference_wrapper<TaskVertexData> task;
     NetworkVertexData* node;
     int nodeIndex = -1;
+    float uploadStart = 0;
+    float uploadFinish = 0;
 };
 
 #endif //FIRSTHOPMOBILEOFFLOADING_TASKMAPPING_H

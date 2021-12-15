@@ -289,6 +289,8 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
 
     float estimatedFinishTime = -1.0f;
     float startTime = 0;
+    float uploadStart = INT_MAX;
+    float uploadFinish = -1;
 
     NetworkVertexData *selectedNode;
     vector<TaskMapping> parents;
@@ -301,6 +303,8 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
             return;
 
         nodeIndex = reservationQueue[result].nodeIndex;
+        uploadStart = reservationQueue[result].uploadStart;
+        uploadFinish = reservationQueue[result].uploadFinish;
         selectedNode = &networkVertexList[(int) nodeIndex].m_property;
         estimatedFinishTime = reservedTask.finishTime;
         startTime = reservedTask.startTime;
@@ -340,6 +344,18 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
         selectedNode = &networkVertexList[selectedNodeData.first].m_property;
         nodeIndex = selectedNodeData.first;
 
+        for (auto & parent_result_upload_window : finish_times) {
+            if (uploadStart > parent_result_upload_window.first && parent_result_upload_window.first != -1)
+                uploadStart = parent_result_upload_window.first;
+            if (uploadFinish < parent_result_upload_window.second)
+                uploadFinish = parent_result_upload_window.second;
+        }
+
+        if(uploadFinish == -1)
+            uploadFinish = startTime;
+        if(uploadStart == INT_MAX)
+            uploadStart = uploadFinish;
+
         NetworkTopologyServices::addUploadsToLink(make_pair(finish_times, parents), selectedNodeData.first,
                                                   network, hash_map);
     }
@@ -358,7 +374,7 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
     //Adding the selected task to our selected node
     (const_cast<vector<struct NodeMapping> &>(node.getTaskVector())).push_back(
             {selectedTask.task.get(), make_pair(startTime, estimatedFinishTime)});
-    TaskMapping map{startTime, estimatedFinishTime, selectedTask, selectedNode, nodeIndex};
+    TaskMapping map{startTime, estimatedFinishTime, selectedTask, selectedNode, nodeIndex, uploadStart, uploadFinish};
     inProgress->push_back(map);
 
     SimulatorFunctions::preallocateTasks(total_task_lists, selectedTask, networkVertexList, reservationQueue, network,
@@ -455,7 +471,20 @@ void SimulatorFunctions::preallocateTasks(
             reservationQueue[index].startTime = startTime;
             reservationQueue[index].finishTime = chooseNode.second;
             reservationQueue[index].nodeIndex = chooseNode.first;
+            reservationQueue[index].uploadStart = INT_MAX;
+            reservationQueue[index].uploadFinish = -1;
 
+            for (auto & parent_result_upload_window : parent_result_upload_windows) {
+                if (reservationQueue[index].startTime > parent_result_upload_window.first && parent_result_upload_window.first != -1)
+                    reservationQueue[index].startTime = parent_result_upload_window.first;
+                if (reservationQueue[index].uploadFinish < parent_result_upload_window.second)
+                    reservationQueue[index].uploadFinish = parent_result_upload_window.second;
+            }
+
+            if(reservationQueue[index].uploadFinish == -1)
+                reservationQueue[index].uploadFinish = startTime;
+            if(reservationQueue[index].startTime == INT_MAX)
+                reservationQueue[index].startTime = reservationQueue[index].uploadFinish;
 
             vector<NodeMapping> nodeReservations = node.getReservations();
             nodeReservations.push_back(

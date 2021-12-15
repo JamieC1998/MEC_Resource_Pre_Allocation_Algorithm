@@ -17,6 +17,8 @@ struct ReservationMapping {
     float startTime;
     std::vector<TaskMapping> parents;
     int parentCount;
+    float uploadStart = 0;
+    float uploadFinish = 0;
 };
 
 #endif //FIRSTHOPMOBILEOFFLOADING_RESERVATIONMAPPING_H
