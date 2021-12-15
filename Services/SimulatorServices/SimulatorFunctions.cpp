@@ -353,7 +353,7 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
 
         if(uploadFinish == -1)
             uploadFinish = startTime;
-        if(uploadStart == INT_MAX)
+        if(uploadStart >= INT_MAX - 10)
             uploadStart = uploadFinish;
 
         NetworkTopologyServices::addUploadsToLink(make_pair(finish_times, parents), selectedNodeData.first,
@@ -475,16 +475,16 @@ void SimulatorFunctions::preallocateTasks(
             reservationQueue[index].uploadFinish = -1;
 
             for (auto & parent_result_upload_window : parent_result_upload_windows) {
-                if (reservationQueue[index].startTime > parent_result_upload_window.first && parent_result_upload_window.first != -1)
-                    reservationQueue[index].startTime = parent_result_upload_window.first;
+                if (reservationQueue[index].uploadStart > parent_result_upload_window.first && parent_result_upload_window.first != -1)
+                    reservationQueue[index].uploadStart = parent_result_upload_window.first;
                 if (reservationQueue[index].uploadFinish < parent_result_upload_window.second)
                     reservationQueue[index].uploadFinish = parent_result_upload_window.second;
             }
 
             if(reservationQueue[index].uploadFinish == -1)
                 reservationQueue[index].uploadFinish = startTime;
-            if(reservationQueue[index].startTime == INT_MAX)
-                reservationQueue[index].startTime = reservationQueue[index].uploadFinish;
+            if(reservationQueue[index].uploadStart >= INT_MAX - 10)
+                reservationQueue[index].uploadStart = reservationQueue[index].uploadFinish;
 
             vector<NodeMapping> nodeReservations = node.getReservations();
             nodeReservations.push_back(

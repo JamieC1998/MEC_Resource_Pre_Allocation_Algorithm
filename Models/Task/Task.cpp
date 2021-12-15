@@ -15,19 +15,19 @@ void Task::setRam(float ram) {
     Task::ram = ram;
 }
 
-unsigned int Task::getDataIn() const {
+float Task::getDataIn() const {
     return data_in;
 }
 
-void Task::setDataIn(unsigned int dataIn) {
+void Task::setDataIn(float dataIn) {
     data_in = dataIn;
 }
 
-unsigned int Task::getDataOut() const {
+float Task::getDataOut() const {
     return data_out;
 }
 
-void Task::setDataOut(unsigned int dataOut) {
+void Task::setDataOut(float dataOut) {
     data_out = dataOut;
 }
 
@@ -104,7 +104,7 @@ float Task::getProcessTime(node_type nodeType){
 }
 
 Task::Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile,
-           float ram, unsigned int dataIn, unsigned int dataOut, float storage, int source_mobile_id, bool can_offload): name(name), process_time_cloud(process_time_cloud), process_time_edge(process_time_edge),
+           float ram, float dataIn, float dataOut, float storage, int source_mobile_id, bool can_offload): name(name), process_time_cloud(process_time_cloud), process_time_edge(process_time_edge),
            process_time_mobile(process_time_mobile), ram(ram), data_in(dataIn), data_out(dataOut), storage(storage), source_mobile_id(source_mobile_id), offload(can_offload), id(task_id_counter){
     task_id_counter++;
 };
