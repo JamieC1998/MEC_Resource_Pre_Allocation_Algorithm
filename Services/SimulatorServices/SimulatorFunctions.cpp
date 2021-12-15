@@ -201,27 +201,31 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
                          make_pair(current_time, current_time + rt_local));
 
     float bandwidth = NetworkTopologyServices::getBandwidth(source_node_index, currentNodeIndex, network);
-    float ot_up = 0.0f;
+    float ot_up = current_time;
 
     EdgePropertyData &edge = edge_map.at(source_node_index).at(currentNodeIndex);
+    float ot_down = 0;
+    if(current_node.getType() != node_type::mobile) {
+        for (float upload_time : upload_times) {
+            pair<float, float> window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, current_time,
+                                                                              upload_time, bandwidth, edge.latency);
+            edge.occupancy_times.push_back(window);
+            tmp_data_transfer_times.push_back(window);
 
-    for (float upload_time : upload_times) {
-        pair<float, float> window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, current_time,
-                                                                          upload_time, bandwidth, edge.latency);
-        edge.occupancy_times.push_back(window);
-        tmp_data_transfer_times.push_back(window);
+            if (ot_up < window.second)
+                ot_up = window.second;
+        }
 
-        if (ot_up < window.second)
-            ot_up = window.second;
+        pair<float, float> ot_down_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, rt_local + ot_up,
+                                                                                  task.getDataOut(), bandwidth, 0);
+
+
+        tmp_data_transfer_times.push_back(ot_down_window);
+        ot_down = ot_down_window.second;
     }
 
-    pair<float, float> ot_down_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, rt_local + ot_up,
-                                                                              task.getDataOut(), bandwidth, 0);
-    tmp_data_transfer_times.push_back(ot_down_window);
-    float ot_down = ot_down_window.second;
-
-    return make_pair(make_pair(current_time, current_time + ot_up + rt_local + ot_down),
-                     make_pair(ot_up, current_time + ot_up + rt_local));
+    return make_pair(make_pair(current_time, ot_up + rt_local + ot_down),
+                     make_pair(ot_up, ot_up + rt_local));
 }
 
 void SimulatorFunctions::processReadyTasks(
@@ -285,23 +289,9 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
     (const_cast<vector<struct NodeMapping> &>(node.getTaskVector())).push_back(
             {selectedTask.task.get(), make_pair(selectedNodeData.second.first, selectedNodeData.second.second)});
 
-    float uploadStart = INT_MAX;
-    float uploadFinish = -1;
-    for (auto & parent_result_upload_window : data_transfer_times) {
-        if (uploadStart > parent_result_upload_window.first && parent_result_upload_window.first != -1)
-            uploadStart = parent_result_upload_window.first;
-        if (uploadFinish < parent_result_upload_window.second && parent_result_upload_window.second >= selectedNodeData.second.second)
-            uploadFinish = parent_result_upload_window.second;
-    }
-
-    if(node.getType() == node_type::mobile) {
-        uploadFinish = selectedNodeData.second.second;
-        uploadStart = time;
-    }
-
     inProgress->push_back(
             {time, selectedNodeData.first.second, selectedTask, selectedNode, selectedNodeData.second.first,
-             selectedNodeData.second.second, uploadStart, uploadFinish});
+             selectedNodeData.second.second});
 
     NetworkTopologyServices::addUploadsToLink(data_transfer_times, 0, selectedNodeData.first.first, network, map);
 }
