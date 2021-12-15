@@ -206,6 +206,8 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
     EdgePropertyData &edge = edge_map.at(source_node_index).at(currentNodeIndex);
     float ot_down = 0;
     if(current_node.getType() != node_type::mobile) {
+        if(task.getName() == "17_inception_v3_Mixed_5b/Branch_1/Conv2d_0b_5x5" && current_node.getId() == 4)
+            cout << endl;
         for (float upload_time : upload_times) {
             pair<float, float> window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, current_time,
                                                                               upload_time, bandwidth, edge.latency);
@@ -217,14 +219,14 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
         }
 
         pair<float, float> ot_down_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, rt_local + ot_up,
-                                                                                  task.getDataOut(), bandwidth, 0);
+                                                                                  task.getDataOut(), bandwidth, edge.latency);
 
 
         tmp_data_transfer_times.push_back(ot_down_window);
         ot_down = ot_down_window.second;
     }
 
-    return make_pair(make_pair(current_time, ot_up + rt_local + ot_down),
+    return make_pair(make_pair(current_time, ot_down),
                      make_pair(ot_up, ot_up + rt_local));
 }
 
