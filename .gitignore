@@ -1,6 +1,6 @@
 application_topology_*
 lower_bound_vals.txt
-output_sol.txt
+output_sola.txt
 
 # Prerequisites
 *.d

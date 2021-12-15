@@ -106,8 +106,6 @@ NetworkTopologyServices::findLinkSlot(std::vector<std::pair<float, float>> occup
 
     pair<float, float> res = make_pair(start_time, start_time + duration);
 
-    if (occupancy_times.size() > 3 && bandwidth == 10)
-        cout << "WOW";
 
     sort(occupancy_times.begin(), occupancy_times.end(),
          [](const pair<float, float> &a, const pair<float, float> &b) -> bool {
@@ -115,8 +113,13 @@ NetworkTopologyServices::findLinkSlot(std::vector<std::pair<float, float>> occup
          });
 
     for (int i = 0; i < occupancy_times.size(); i++) {
-        if (occupancy_times[i].second < start_time)
+        if (occupancy_times[i].second < start_time) {
+            if(i == occupancy_times.size() - 1) {
+                res.first = start_time;
+                res.second = res.first + duration;
+            }
             continue;
+        }
 
         if (i < occupancy_times.size() - 1) {
             float time_window = (occupancy_times[i + 1].first - 0.00001f) - occupancy_times[i].second + 0.00001f;
