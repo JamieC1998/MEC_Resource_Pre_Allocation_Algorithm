@@ -43,8 +43,8 @@ private:
     float process_time_mobile;
 
 public:
-    Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile, float ram, unsigned int dataIn,
-         unsigned int dataOut, float storage, int source_mobile_id, bool can_offload);
+    Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile, float ram, float dataIn,
+         float dataOut, float storage, int source_mobile_id, bool can_offload);
 
     int getId() const;
 

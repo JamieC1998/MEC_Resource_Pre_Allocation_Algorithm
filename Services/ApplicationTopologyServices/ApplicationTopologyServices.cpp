@@ -18,8 +18,8 @@ ApplicationTopology ApplicationTopologyServices::generateApplications(
         auto &application = item.second[j];
         vector<string> strL = application.first;
         vector<string> edgeL = application.second;
-        Task generated_task = Task(strL[0], stof(strL[1]), stof(strL[2]), stof(strL[3]), stof(strL[4]), stoi(strL[5]), stoi(strL[6]),
-                                   stoi(strL[7]), source_mobile_id, stoi(strL[8]));
+        Task generated_task = Task(strL[0], stof(strL[1]), stof(strL[2]), stof(strL[3]), stof(strL[4]), stof(strL[5]), stof(strL[6]),
+                                   stof(strL[7]), source_mobile_id, stoi(strL[8]));
 
         add_vertex({generated_task}, a);
 
