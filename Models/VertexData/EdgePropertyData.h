@@ -8,7 +8,7 @@
 #include <vector>
 
 struct EdgePropertyData {
-    int edge_weight;
+    float edge_weight;
 
     //Link latency in seconds
     float latency;

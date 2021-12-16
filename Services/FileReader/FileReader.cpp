@@ -15,7 +15,7 @@ FileReader::parseApplications(std::string file_name, float* time) {
     std::ifstream MyReadFile(file_name);
 
     getline(MyReadFile, myText);
-    *time = std::stof(myText);
+    *time = std::stof(myText) * 1000;
 
     getline(MyReadFile, myText);
     int applicationCount = std::stoi(myText);
@@ -27,7 +27,7 @@ FileReader::parseApplications(std::string file_name, float* time) {
         int numberOfTasks = std::stoi(myText);
 
         getline(MyReadFile, myText);
-        float offloadTime = std::stof(myText);
+        float offloadTime = std::stof(myText) * 1000;
 
         std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>> application;
 
