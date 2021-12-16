@@ -192,7 +192,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
                                      : networkList[currentNodeIndex].m_property.edgeNode.get();
 
 
-    float rt_local = (float) task.getProcessTime(current_node.getType()) + 0.001;
+    float rt_local = task.getProcessTime(current_node.getType());
 
     //If the task is not allowed to be offloaded and this is the source task we do not need to calculate bandwidth
     //as there's no data to transfer
@@ -201,7 +201,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
                          make_pair(current_time, current_time + rt_local));
 
     float bandwidth = NetworkTopologyServices::getBandwidth(source_node_index, currentNodeIndex, network);
-    float ot_up = current_time;
+    float ot_up = current_time + 0.0001f;
 
     EdgePropertyData &edge = edge_map.at(source_node_index).at(currentNodeIndex);
     float ot_down = ot_up + rt_local;
@@ -224,7 +224,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
         ot_down = ot_down_window.second;
     }
 
-    return make_pair(make_pair(current_time, ot_down),
+    return make_pair(make_pair(current_time + 0.0001f, ot_down),
                      make_pair(ot_up, ot_up + rt_local));
 }
 
