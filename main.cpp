@@ -148,10 +148,10 @@ void main::logResults(const vector<TaskMapping> &finished, char* output_filename
         else if (i.node->type == mobile)
             myfile << i.node->mobileNode->to_string();
 
-        myfile << endl << "START TIME: " << i.absoluteStart << endl;
-        myfile << "FINISH TIME: " << i.absoluteFinish << endl;
-        myfile << endl << "UPLOAD START TIME: " << i.uploadStart << endl;
-        myfile << "UPLOAD FINISH TIME: " << i.uploadFinish << endl;
+        myfile << endl << "START TIME: " << i.absoluteStart / 1000 << endl;
+        myfile << "FINISH TIME: " << i.absoluteFinish / 1000 << endl;
+        myfile << endl << "UPLOAD START TIME: " << i.uploadStart / 1000 << endl;
+        myfile << "UPLOAD FINISH TIME: " << i.uploadFinish / 1000 << endl;
     }
     myfile.close();
     cout << output_filename;
