@@ -201,7 +201,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
                          make_pair(current_time, current_time + rt_local));
 
     float bandwidth = NetworkTopologyServices::getBandwidth(source_node_index, currentNodeIndex, network);
-    float ot_up = current_time + 0.0001f;
+    float ot_up = current_time;
 
     EdgePropertyData &edge = edge_map.at(source_node_index).at(currentNodeIndex);
     float ot_down = ot_up + rt_local;
@@ -224,7 +224,7 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
         ot_down = ot_down_window.second;
     }
 
-    return make_pair(make_pair(current_time + 0.0001f, ot_down),
+    return make_pair(make_pair(current_time, ot_down),
                      make_pair(ot_up, ot_up + rt_local));
 }
 
@@ -264,7 +264,7 @@ void SimulatorFunctions::taskMapping(float time, NetworkTopology &network, std::
 
     pair<pair<int, float>, pair<float, float>> selectedNodeData = SimulatorFunctions::ChooseNode(networkVertexList,
                                                                                                  selectedTask.task.get(),
-                                                                                                 time,
+                                                                                                 time + 0.001f,
                                                                                                  network,
                                                                                                  upload_inputs, map,
                                                                                                  data_transfer_times);
