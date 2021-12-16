@@ -208,8 +208,7 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
                                      ? networkList[currentNodeIndex].m_property.comp.get()
                                      : networkList[currentNodeIndex].m_property.edgeNode.get();
 
-
-    float rt_local = (float) task.getProcessTime(current_node.getType());
+    float rt_local = task.getProcessTime(current_node.getType());
 
     float ot_up = 0.0f;
 
@@ -223,7 +222,9 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
         if(parent.nodeIndex != currentNodeIndex){
             EdgePropertyData &edge = (parent.nodeIndex < currentNodeIndex) ? map.at(parent.nodeIndex).at(currentNodeIndex) : map.at(currentNodeIndex).at(parent.nodeIndex);
             float bw = INT_MAX - edge.edge_weight;
-            time_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, parent_upload_start,
+
+            if(parent.task.get().task->getDataOut() != 0)
+                time_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, parent_upload_start,
                                                                 parent.task.get().task->getDataOut(), bw, edge.latency);
             edge.occupancy_times.push_back(time_window);
         }
@@ -234,7 +235,7 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
 
     startTime = ot_up;
 
-    return rt_local + ot_up + 0.001f;
+    return rt_local + ot_up;
 }
 
 vector<pair<int, bool>> SimulatorFunctions::processReadyTasks(
@@ -437,12 +438,12 @@ void SimulatorFunctions::preallocateTasks(
                                                                           1].absoluteStart;
                 for (const auto &item: *inProgress) {
                     if (parent_start_time <= item.absoluteFinish)
-                        finish_times.push_back(item.absoluteFinish + 0.0001f);
+                        finish_times.push_back(item.absoluteFinish);
                 }
 
                 for (const auto &item: reservationQueue) {
                     if (parent_start_time <= item.finishTime && item.finishTime != -1)
-                        finish_times.push_back(item.finishTime + 0.0001f);
+                        finish_times.push_back(item.finishTime);
                 }
 
                 std::sort(finish_times.begin(), finish_times.end());
