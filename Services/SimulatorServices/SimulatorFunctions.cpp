@@ -217,11 +217,11 @@ float SimulatorFunctions::calculateRunTime(Task &task, int currentNodeIndex,
     ot_up += current_time;
 
     for (auto & parent : parents) {
-        float parent_upload_start = (parent.absoluteFinish + 0.001f < current_time) ? current_time : parent.absoluteFinish + 0.001f;
+        float parent_upload_start = (parent.absoluteFinish + 1 < current_time) ? current_time : parent.absoluteFinish + 1;
         pair<float, float> time_window = make_pair(-1, parent_upload_start);
         if(parent.nodeIndex != currentNodeIndex){
             EdgePropertyData &edge = (parent.nodeIndex < currentNodeIndex) ? map.at(parent.nodeIndex).at(currentNodeIndex) : map.at(currentNodeIndex).at(parent.nodeIndex);
-            float bw = INT_MAX - edge.edge_weight;
+            float bw = edge.edge_weight;
 
             if(parent.task.get().task->getDataOut() != 0)
                 time_window = NetworkTopologyServices::findLinkSlot(edge.occupancy_times, parent_upload_start,
@@ -423,6 +423,7 @@ void SimulatorFunctions::preallocateTasks(
             float startTime = 0.0f;
             vector<float> finish_times;
             vector<pair<float, float>> parent_result_upload_windows;
+
             auto chooseNode = SimulatorFunctions::ChooseNode(networkVertexList, outGoingTask->m_property.task.get(),
                                                              map.absoluteStart,
                                                              network, reservationQueue[index].parents,

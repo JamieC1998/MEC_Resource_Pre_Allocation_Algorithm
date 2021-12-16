@@ -175,35 +175,35 @@ NetworkTopology NetworkTopologyServices::generateNetwork() {
     auto v4 = add_vertex({edgeNodeB.getType(), none, edgeNodeB, none}, g);
     auto v5 = add_vertex({edgeNodeC.getType(), none, edgeNodeC, none}, g);
 
-    add_edge(v1, v2, EdgePropertyData{INT_MAX - 150, 0.001}, g);
-    add_edge(v2, v1, EdgePropertyData{INT_MAX - 150, 0.001}, g);
+    add_edge(v1, v2, EdgePropertyData{(150.0f / 1000), 0.001 * 1000}, g);
+    add_edge(v2, v1, EdgePropertyData{(150.0f / 1000), 0.001 * 1000}, g);
 
-    add_edge(v1, v3, EdgePropertyData{INT_MAX - 36, 0.07}, g);
-    add_edge(v3, v1, EdgePropertyData{INT_MAX - 36, 0.07}, g);
+    add_edge(v1, v3, EdgePropertyData{(36.0f / 1000), 0.07 * 1000}, g);
+    add_edge(v3, v1, EdgePropertyData{(36.0f / 1000), 0.07 * 1000}, g);
 
-    add_edge(v1, v4, EdgePropertyData{INT_MAX - 150, 0.001}, g);
-    add_edge(v4, v1, EdgePropertyData{INT_MAX - 150, 0.001}, g);
+    add_edge(v1, v4, EdgePropertyData{(150.0f / 1000), 0.001 * 1000}, g);
+    add_edge(v4, v1, EdgePropertyData{(150.0f / 1000), 0.001 * 1000}, g);
 
-    add_edge(v1, v5, EdgePropertyData{INT_MAX - 150, 0.001}, g);
-    add_edge(v5, v1, EdgePropertyData{INT_MAX - 150, 0.001}, g);
+    add_edge(v1, v5, EdgePropertyData{(150.0f / 1000), 0.001 * 1000}, g);
+    add_edge(v5, v1, EdgePropertyData{(150.0f / 1000), 0.001 * 1000}, g);
 
-    add_edge(v2, v3, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
-    add_edge(v3, v2, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
+    add_edge(v2, v3, EdgePropertyData{(1024.0f / 1000), 0.02 * 1000}, g);
+    add_edge(v3, v2, EdgePropertyData{(1024.0f / 1000), 0.02 * 1000}, g);
 
-    add_edge(v2, v4, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
-    add_edge(v4, v2, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
+    add_edge(v2, v4, EdgePropertyData{(1024.0f / 1000), 0.01 * 1000}, g);
+    add_edge(v4, v2, EdgePropertyData{(1024.0f / 1000), 0.01 * 1000}, g);
 
-    add_edge(v2, v5, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
-    add_edge(v5, v2, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
+    add_edge(v2, v5, EdgePropertyData{(1024.0f / 1000), 0.01 * 1000}, g);
+    add_edge(v5, v2, EdgePropertyData{(1024.0f / 1000), 0.01 * 1000}, g);
 
-    add_edge(v3, v4, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
-    add_edge(v4, v3, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
+    add_edge(v3, v4, EdgePropertyData{(1024.0f / 1000), 0.02 * 1000}, g);
+    add_edge(v4, v3, EdgePropertyData{(1024.0f / 1000), 0.02 * 1000}, g);
 
-    add_edge(v3, v5, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
-    add_edge(v5, v3, EdgePropertyData{INT_MAX - 1024, 0.02}, g);
+    add_edge(v3, v5, EdgePropertyData{(1024.0f / 1000), 0.02 * 1000}, g);
+    add_edge(v5, v3, EdgePropertyData{(1024.0f / 1000), 0.02 * 1000}, g);
 
-    add_edge(v4, v5, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
-    add_edge(v5, v4, EdgePropertyData{INT_MAX - 1024, 0.01}, g);
+    add_edge(v4, v5, EdgePropertyData{(1024.0f / 1000), 0.01 * 1000}, g);
+    add_edge(v5, v4, EdgePropertyData{(1024.0f / 1000), 0.01 * 1000}, g);
 
     return g;
 }
