@@ -50,7 +50,7 @@ float NetworkTopologyServices::getBandwidth(int source, int destination, Network
     property_map<NetworkTopology, edge_weight_t>::type weightMap = get(edge_weight, network);
 
     auto res = boost::edge(source, destination, network).first;
-    return INT_MAX - get(weightMap, res).edge_weight;
+    return get(weightMap, res).edge_weight;
 }
 
 vector<pair<float, float>>

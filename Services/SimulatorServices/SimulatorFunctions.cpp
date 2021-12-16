@@ -150,6 +150,7 @@ std::pair<std::pair<int, float>, std::pair<float, float>> SimulatorFunctions::Ch
         }
     }
     pair<float, float> minProcessTime = make_pair(0.0f, 0.0f);
+
     for (auto vertex = networkList.begin(); vertex != networkList.end(); vertex++) {
         int current_node_index = ((int) std::distance(networkList.begin(), vertex));
         vector<pair<float, float>> tmp_data_transfer_times;
