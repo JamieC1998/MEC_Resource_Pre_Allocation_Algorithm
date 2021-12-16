@@ -18,7 +18,7 @@ typedef graph_traits<NetworkTopology>::vertex_iterator network_vertex_iterator;
 typedef graph_traits<NetworkTopology>::vertex_descriptor network_vertex_descriptor;
 typedef property_map<NetworkTopology, vertex_index_t>::type IdMap;
 
-const int SERVERS_PER_CLOUDLET = 10;
+const int SERVERS_PER_CLOUDLET = 1;
 
 class NetworkTopologyServices {
 public:
