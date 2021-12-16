@@ -191,10 +191,6 @@ SimulatorFunctions::calculateRunTime(Task &task, int source_node_index, int curr
                                      ? networkList[currentNodeIndex].m_property.comp.get()
                                      : networkList[currentNodeIndex].m_property.edgeNode.get();
 
-
-    if(task.getName() == "1_alex_v2_4gpu_phantom_start/conv1" && current_node.getId() == 1)
-        cout << "WOW";
-
     float rt_local = task.getProcessTime(current_node.getType());
 
     //If the task is not allowed to be offloaded and this is the source task we do not need to calculate bandwidth
