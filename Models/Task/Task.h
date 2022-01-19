@@ -8,13 +8,16 @@
 
 #include <iostream>
 #include <enums/NodeTypes.h>
+#include <enums/ProcessingTypes.h>
 
 const float INSTRUCTION_SIZE_MEGABYTES = 0.000002;
 
 class Task {
 private:
     static int task_id_counter;
+    static int application_counter;
     int id;
+    int applicationId;
 
     std::string name;
 
@@ -41,6 +44,8 @@ private:
     float process_time_cloud;
     float process_time_edge;
     float process_time_mobile;
+
+    processing_type processingType;
 
 public:
     Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile, float ram, float dataIn,
@@ -85,6 +90,15 @@ public:
     std::string to_string();
 
     float getProcessTime(node_type nodeType);
+
+    processing_type getProcessingType(processing_type processingType1);
+
+    void setProcessingType(processing_type processingType1);
+
+    int getApplicationId();
+
+    static void increaseApplicationCounter();
+
 };
 
 

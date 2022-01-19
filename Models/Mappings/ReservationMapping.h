@@ -11,7 +11,7 @@
 struct TaskMapping;
 
 struct ReservationMapping {
-    TaskVertexData* task;
+    std::pair<int, int> taskId;
     int nodeIndex;
     float finishTime;
     float startTime;

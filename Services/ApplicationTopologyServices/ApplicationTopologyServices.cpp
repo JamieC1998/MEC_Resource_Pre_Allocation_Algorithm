@@ -7,6 +7,7 @@
 #include <Models/Task/Task.h>
 #include <stack>
 #include <Models/Mappings/SuperNode.h>
+#include <Services/ApplicationGraph/ApplicationGraph.h>
 
 using namespace std;
 
@@ -24,27 +25,29 @@ struct CriticalPathItem {
     unsigned long long MI;
 };
 
-ApplicationTopology ApplicationTopologyServices::generateApplications(
+ApplicationGraph ApplicationTopologyServices::generateApplications(
         std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
         int source_mobile_id) {
 
-    ApplicationTopology a;
+    ApplicationGraph graph = ApplicationGraph();
 
     for (int j = 0; j < item.second.size(); j++) {
         auto &application = item.second[j];
         vector<string> strL = application.first;
         vector<string> edgeL = application.second;
-        Task generated_task = Task(strL[0], stof(strL[1]) * 1000, stof(strL[2]) * 1000, stof(strL[3]) * 1000, stof(strL[4]), stof(strL[5]), stof(strL[6]),
+        Task* generated_task = new Task(strL[0], stof(strL[1]) * 1000, stof(strL[2]) * 1000, stof(strL[3]) * 1000, stof(strL[4]), stof(strL[5]), stof(strL[6]),
                             stof(strL[7]), source_mobile_id, stoi(strL[8]));
 
-        add_vertex({generated_task}, a);
 
-        for (auto &i : edgeL)
-            add_edge(stoi(i), j, 1, a);
-
+        vector<int> edges;
+        edges.reserve(edgeL.size());
+        for (auto &i : edgeL) {
+            edges.push_back(stoi(i));
+        }
+        graph.addTask(generated_task, j, edges);
     }
-
-    return a;
+    Task::increaseApplicationCounter();
+    return graph;
 }
 
 void topologicalSort(int curr, vector<bool> visited, stack<int> &sorted_topology, vector<vector<int>> adjacency) {
@@ -102,7 +105,7 @@ float total_path_time(vector<CriticalPathItem> critical_path_list) {
 }
 
 float ApplicationTopologyServices::calculateLowerBound(
-        vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList,
+        ApplicationGraph& application,
         SuperNode super_node) {
 
 //    vector<CriticalPathItem> critical_path_list;
@@ -128,18 +131,9 @@ float ApplicationTopologyServices::calculateLowerBound(
     vector<TempTask> task_list;
     float time = 0.0f;
 
-    for(const auto& task: taskList) {
-        Task tempTask = task.m_property.task.get();
+    for(const Task* task: application.fetchTasks()) {
 
-        std::vector<int> parents;
-        for(auto m_in_edge: task.m_in_edges)
-            parents.push_back((int) m_in_edge.m_target);
-
-        std::vector<int> children;
-        for(auto m_out_edge : task.m_out_edges)
-            children.push_back((int) m_out_edge.m_target);
-
-        task_list.push_back({parents, children, tempTask, false, false});
+        task_list.push_back({application.fetchTaskParentsById(task->getId()), application.fetchTaskChildrenById(task->getId()), *task, false, false});
     }
 
     while(finished_list.size() != task_list.size()){

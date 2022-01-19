@@ -38,86 +38,14 @@ int main(int argc, char *argv[]) {
     for (auto &item: parsedApplications)
         application_events.push_back(
                 {item.first, ApplicationTopologyServices::generateApplications(item, source_mobile_id)});
-
-    SimulatorFunctions::programLoop(network, application_events, completion_time, output_file_name, lower_bound_file_name);
-
-    return 0;
-}
-
-void main::programLoop(NetworkTopology &network, ApplicationTopology &navigator) {
-    //Retrieving the list of vertices and their edges(in & out) in both our generated application and our network
-    auto navigatorVertexList = ApplicationTopologyServices::getVertices(navigator);
-    auto networkVertexList = NetworkTopologyServices::getVertices(network);
-
-    //Will hold the tasks ready to be offloaded in each loop
-    vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex*>
-            readyTaskList;
-
-    //Will hold the nodes ready to be offloaded in each loop
-    vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex>>
-            readyNodeList;
-
-    //Contains a list of tasks mapped to nodes currently computing
-    vector<TaskMapping> inProgress;
-
-    //Contains a finished list of tasks
-    vector<TaskMapping> finished;
-
-    //Represents time in seconds
-    float time = 0.0f;
-
-    while (finished.size() != navigatorVertexList.size()) {
-        //Sorting the current event list from most recent to oldest time
-        inProgress = SimulatorFunctions::sortEventList(inProgress);
-
-        //Moving to the next event
-        if (!inProgress.empty()) {
-            TaskMapping tM = inProgress.back();
-            inProgress.pop_back();
-
-            time = tM.absoluteFinish;
-            tM.task.get().task.get().setDone(true);
-            tM.task.get().task.get().setInProgress(false);
-
-            if (tM.node->type == mobile)
-                tM.node->mobileNode->setIsFree(true);
-            else if (tM.node->type == cloud)
-                tM.node->comp->setIsFree(true);
-            else if (tM.node->type == node_type::edge)
-                tM.node->edgeNode->setIsFree(true);
-
-            finished.push_back(tM);
-        }
-
-        readyTaskList = SimulatorFunctions::getReadyTasks(navigatorVertexList);
-        readyNodeList = main::getReadyNodes(networkVertexList);
-
-        int count = (readyTaskList.size() < readyNodeList.size()) ? readyTaskList.size() : readyNodeList.size();
-
-        for (int i = 0; i < count; i++) {
-            auto &selectedTask = readyTaskList.back()->m_property;
-            readyTaskList.pop_back();
-
-            auto &selectedNode = readyNodeList.back().get().m_property;
-            readyNodeList.pop_back();
-
-            selectedTask.task.get().setInProgress(true);
-
-            if (selectedNode.type == mobile)
-                selectedNode.mobileNode->setIsFree(false);
-            else if (selectedNode.type == cloud) {
-                selectedNode.comp->setIsFree(false);
-            } else if (selectedNode.type == node_type::edge)
-                selectedNode.edgeNode->setIsFree(false);
-
-            float finish = time + main::calculateProcessingTime(selectedTask, selectedNode);
-            inProgress.push_back({time, finish, selectedTask, &selectedNode});
-        }
-
+    try {
+        SimulatorFunctions::programLoop(network, application_events, completion_time, output_file_name, lower_bound_file_name);
     }
-
-    char const * output = "../output_file.txt";
-    main::logResults(finished, const_cast<char *>(output));
+    catch (const std::exception& e) {
+        for(ApplicationEvent ae: application_events)
+            ae.application.deleteTasks();
+    }
+    return 0;
 }
 
 void main::logLowerBoundTimes(vector<float> lower_bound_application_times, std::string output_file_name){
@@ -130,15 +58,17 @@ void main::logLowerBoundTimes(vector<float> lower_bound_application_times, std::
     myfile.close();
 }
 
-void main::logResults(const vector<TaskMapping> &finished, char* output_filename) {
+void main::logResults(const std::vector<TaskMapping> &finished, char *output_filename,
+                      std::vector<ApplicationGraph>& total_task_lists) {
     ofstream myfile;
     myfile.open(output_filename);
 
     myfile << endl << "LOGGING MAPPING RESULTS:" << endl;
-    for (const auto &i : finished) {
+    for (const TaskMapping &i : finished) {
+        Task finTask = *total_task_lists[i.taskId.first].taskList[i.taskId.second];
         myfile << "====================" << endl;
         myfile << "TASK: " << endl;
-        myfile << i.task.get().task->to_string() << endl;
+        myfile << finTask.to_string() << endl;
         myfile << "VERTEX:" << endl;
 
         if (i.node->type == cloud)
@@ -155,6 +85,9 @@ void main::logResults(const vector<TaskMapping> &finished, char* output_filename
     }
     myfile.close();
     cout << output_filename;
+
+    for(ApplicationGraph appGraph: total_task_lists)
+        appGraph.deleteTasks();
 }
 
 /**

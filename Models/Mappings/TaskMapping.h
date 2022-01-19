@@ -13,7 +13,7 @@ struct NetworkVertexData;
 struct TaskMapping {
     float absoluteStart = 0;
     float absoluteFinish = 0;
-    std::reference_wrapper<TaskVertexData> task;
+    std::pair<int, int> taskId;
     NetworkVertexData* node;
     int nodeIndex = -1;
     float uploadStart = 0;

@@ -23,4 +23,4 @@ add_executable(FirstHopMobileOffloading
         Models/VertexData/TaskVertexData.h
         Services/SimulatorServices/SimulatorFunctions.cpp
         Services/SimulatorServices/SimulatorFunctions.h
-        Services/FileReader/FileReader.cpp Services/FileReader/FileReader.h Models/Mappings/ReservationMapping.h Models/Mappings/TaskMapping.h Models/VertexData/EdgePropertyData.h Models/Mappings/SuperNode.h Models/Mappings/TempTask.h)
+        Services/FileReader/FileReader.cpp Services/FileReader/FileReader.h Models/Mappings/ReservationMapping.h Models/Mappings/TaskMapping.h Models/VertexData/EdgePropertyData.h Models/Mappings/SuperNode.h Models/Mappings/TempTask.h Services/ApplicationGraph/ApplicationGraph.cpp Services/ApplicationGraph/ApplicationGraph.h enums/ProcessingTypes.h)

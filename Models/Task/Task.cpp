@@ -6,6 +6,7 @@
 #include "Task.h"
 
 int Task::task_id_counter = 0;
+int Task::application_counter = 0;
 
 float Task::getRam() const {
     return ram;
@@ -93,7 +94,7 @@ int Task::getId() const {
     return id;
 }
 
-float Task::getProcessTime(node_type nodeType){
+float Task::getProcessTime(node_type nodeType) {
     if (nodeType == node_type::cloud)
         return this->process_time_cloud;
     else if (nodeType == node_type::edge)
@@ -104,7 +105,33 @@ float Task::getProcessTime(node_type nodeType){
 }
 
 Task::Task(const std::string &name, float process_time_cloud, float process_time_edge, float process_time_mobile,
-           float ram, float dataIn, float dataOut, float storage, int source_mobile_id, bool can_offload): name(name), process_time_cloud(process_time_cloud), process_time_edge(process_time_edge),
-           process_time_mobile(process_time_mobile), ram(ram), data_in(dataIn), data_out(dataOut), storage(storage), source_mobile_id(source_mobile_id), offload(can_offload), id(task_id_counter){
+           float ram, float dataIn, float dataOut, float storage, int source_mobile_id, bool can_offload) : name(name),
+                                                                                                            process_time_cloud(
+                                                                                                                    process_time_cloud),
+                                                                                                            process_time_edge(
+                                                                                                                    process_time_edge),
+
+                                                                                                            process_time_mobile(
+                                                                                                                    process_time_mobile),
+                                                                                                            ram(ram),
+                                                                                                            data_in(dataIn),
+                                                                                                            data_out(
+                                                                                                                    dataOut),
+                                                                                                            storage(storage),
+                                                                                                            source_mobile_id(
+                                                                                                                    source_mobile_id),
+                                                                                                            offload(can_offload),
+                                                                                                            id(task_id_counter),
+                                                                                                            applicationId(
+                                                                                                                    application_counter) {
     task_id_counter++;
+    this->processingType = unprocessed;
 };
+
+int Task::getApplicationId() {
+    return this->applicationId;
+}
+
+void Task::increaseApplicationCounter() {
+    application_counter++;
+}

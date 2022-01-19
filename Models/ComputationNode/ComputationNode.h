@@ -11,7 +11,7 @@
 #include <vector>
 
 struct NodeMapping {
-    Task task;
+    std::pair<int, int> task;
     std::pair<float, float> timeWindow;
 };
 

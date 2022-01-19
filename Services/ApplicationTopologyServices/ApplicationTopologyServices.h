@@ -9,6 +9,7 @@
 #include <Models/VertexData/TaskVertexData.h>
 #include <Models/VertexData/EdgePropertyData.h>
 #include <Models/Mappings/SuperNode.h>
+#include <Services/ApplicationGraph/ApplicationGraph.h>
 
 using namespace boost;
 
@@ -20,7 +21,7 @@ typedef graph_traits<ApplicationTopology>::vertex_descriptor application_vertex_
 
 struct ApplicationEvent {
     float ready_time = 0;
-    ApplicationTopology application;
+    ApplicationGraph application;
 };
 
 class ApplicationTopologyServices {
@@ -36,11 +37,11 @@ public:
 
     static ApplicationTopology generateChessApp(int source_mobile_id);
 
-    static ApplicationTopology generateApplications(
+    static ApplicationGraph generateApplications(
             std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
             int source_mobile_id);
 
-    static float calculateLowerBound(std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex> &taskList, SuperNode super_node_MI);
+    static float calculateLowerBound(ApplicationGraph& application, SuperNode super_node);
 };
 
 

@@ -11,15 +11,14 @@
 
 class main {
 public:
-    static void programLoop(NetworkTopology &network, ApplicationTopology &navigator);
-
     static std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex>>
     getReadyNodes(
             std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList);
 
     static float calculateProcessingTime(TaskVertexData task, NetworkVertexData node);
 
-    static void logResults(const std::vector<TaskMapping> &finished, char* output_filename);
+    static void
+    logResults(const std::vector<TaskMapping> &finished, char *output_filename, std::vector<ApplicationGraph>& total_task_lists);
 
     static void logLowerBoundTimes(std::vector<float> lower_bound_application_times, std::string output_file_name);
 };
