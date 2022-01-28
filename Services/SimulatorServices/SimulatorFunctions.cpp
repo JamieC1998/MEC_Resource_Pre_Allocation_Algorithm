@@ -554,7 +554,7 @@ void SimulatorFunctions::programLoop(NetworkTopology &network, vector<Applicatio
     for (auto &incoming_application : incoming_applications)
         total_task_count += ((int) incoming_application.application.m_vertices.size());
 
-    //Represents time in seconds
+    //Represents time in milliseconds
     float time = 0.0f;
 
     //Will contain queue of tasks for each application currently offloading
