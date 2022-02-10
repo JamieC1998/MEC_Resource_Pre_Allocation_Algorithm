@@ -1,0 +1,10 @@
+//
+// Created by Jamie Cotter on 04/02/2022.
+//
+
+#ifndef UNTITLED2_GENERALCONSTANTS_H
+#define UNTITLED2_GENERALCONSTANTS_H
+
+const int NO_NODE_FOUND = -1;
+
+#endif //UNTITLED2_GENERALCONSTANTS_H
