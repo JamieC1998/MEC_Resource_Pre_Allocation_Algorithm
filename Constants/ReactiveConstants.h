@@ -1,0 +1,10 @@
+//
+// Created by Jamie Cotter on 04/02/2022.
+//
+
+#ifndef UNTITLED2_REACTIVECONSTANTS_H
+#define UNTITLED2_REACTIVECONSTANTS_H
+
+const short RETURN_TO_MOBILE = -1;
+
+#endif //UNTITLED2_REACTIVECONSTANTS_H

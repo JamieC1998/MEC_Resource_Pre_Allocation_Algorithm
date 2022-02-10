@@ -44,3 +44,5 @@ cmake_install.cmake
 CMakeFiles/
 CMakeCache.txt
 Makefile
+*.json
+application_topology_batch_1_1

@@ -1,28 +1,14 @@
 //
-// Created by Jamie Cotter on 20/07/2021.
+// Created by Jamie Cotter on 28/01/2022.
 //
 
-#ifndef FIRSTHOPMOBILEOFFLOADING_MAIN_H
-#define FIRSTHOPMOBILEOFFLOADING_MAIN_H
+#ifndef UNTITLED2_MAIN_H
+#define UNTITLED2_MAIN_H
 
-#include <Services/NetworkTopologyServices/NetworkTopologyServices.h>
-#include <Services/ApplicationTopologyServices/ApplicationTopologyServices.h>
-#include <Models/Mappings/TaskMapping.h>
+#include "enums/AlgorithmTypes.h"
 
-class main {
+class main{
 public:
-    static void programLoop(NetworkTopology &network, ApplicationTopology &navigator);
-
-    static std::vector<std::reference_wrapper<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex>>
-    getReadyNodes(
-            std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>>, vecS, vecS, bidirectionalS, NetworkVertexData, property<edge_weight_t, EdgePropertyData>, no_property, listS>::config::stored_vertex> &networkList);
-
-    static float calculateProcessingTime(TaskVertexData task, NetworkVertexData node);
-
-    static void logResults(const std::vector<TaskMapping> &finished, char* output_filename);
-
-    static void logLowerBoundTimes(std::vector<float> lower_bound_application_times, std::string output_file_name);
 };
 
-
-#endif //FIRSTHOPMOBILEOFFLOADING_MAIN_H
+#endif //UNTITLED2_MAIN_H
