@@ -1,46 +1,24 @@
 //
-// Created by Jamie Cotter on 22/07/2021.
+// Created by Jamie Cotter on 22/01/2022.
 //
 
+#ifndef UNTITLED2_APPLICATIONTOPOLOGYSERVICES_H
+#define UNTITLED2_APPLICATIONTOPOLOGYSERVICES_H
 
-#include <Models/VertexData/TaskVertexData.h>
-#include <boost/graph/adjacency_list.hpp>
 
-#ifndef FIRSTHOPMOBILEOFFLOADING_APPLICATIONTOPOLOGYSERVICES_H
-#define FIRSTHOPMOBILEOFFLOADING_APPLICATIONTOPOLOGYSERVICES_H
-
-using namespace boost;
-
-typedef property<boost::edge_weight_t, int> EdgeWeightProperty;
-typedef adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, EdgeWeightProperty> ApplicationTopology;
-typedef graph_traits<ApplicationTopology>::edge_iterator application_edge_iterator;
-typedef graph_traits<ApplicationTopology>::vertex_iterator application_vertex_iterator;
-typedef graph_traits<ApplicationTopology>::vertex_descriptor application_vertex_descriptor;
-
-struct ApplicationEvent {
-    float ready_time = 0;
-    ApplicationTopology application;
-};
+#include <vector>
+#include "../../Graph/Graph.h"
+#include "../../Model/Task/Task.h"
 
 class ApplicationTopologyServices {
-
 public:
+    static std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>>
+    generateApplications(const char *input_file, float &simulation_time, int source_mobile_id);
 
-    static void logInfo(ApplicationTopology &application);
-
-    static std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>
-    getVertices(ApplicationTopology &application);
-
-    static ApplicationTopology generateNavigator(int source_mobile_id);
-
-    static ApplicationTopology generateChessApp(int source_mobile_id);
-
-    static ApplicationTopology generateApplications(
+    static std::shared_ptr<Graph<Task, bool>> generateApplication(
             std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>> item,
             int source_mobile_id);
-
-    static std::vector<float> getParentData(std::vector<std::vector<detail::adj_list_gen<adjacency_list<vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>>, vecS, vecS, bidirectionalS, TaskVertexData, property<edge_weight_t, int>, no_property, listS>::config::stored_vertex>>& total_task_lists, int source_node_id);
 };
 
 
-#endif //FIRSTHOPMOBILEOFFLOADING_APPLICATIONTOPOLOGYSERVICES_H
+#endif //UNTITLED2_APPLICATIONTOPOLOGYSERVICES_H

@@ -1,10 +1,10 @@
 //
-// Created by Jamie Cotter on 21/07/2021.
+// Created by Jamie Cotter on 21/01/2022.
 //
 
-#ifndef FIRSTHOPMOBILEOFFLOADING_NODETYPES_H
-#define FIRSTHOPMOBILEOFFLOADING_NODETYPES_H
+#ifndef UNTITLED2_NODETYPES_H
+#define UNTITLED2_NODETYPES_H
 
 enum node_type { cloud, edge, mobile };
 
-#endif //FIRSTHOPMOBILEOFFLOADING_NODETYPES_H
+#endif //UNTITLED2_NODETYPES_H

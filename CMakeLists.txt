@@ -1,26 +1,6 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.20)
 project(FirstHopMobileOffloading)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
-
-find_package(Boost REQUIRED COMPONENTS filesystem)
-include_directories(. ${Boost_INCLUDE_DIRS})
-
-add_executable(FirstHopMobileOffloading
-        main.cpp
-        main.h Models/ComputationNode/ComputationNode.cpp
-        Models/ComputationNode/ComputationNode.h enums/NodeTypes.h
-        Models/EdgeNode/EdgeNode.cpp Models/EdgeNode/EdgeNode.h
-        Models/MobileNode/MobileNode.cpp
-        Models/MobileNode/MobileNode.h
-        Models/VertexData/NetworkVertexData.h
-        Models/Task/Task.cpp Models/Task/Task.h
-        Services/NetworkTopologyServices/NetworkTopologyServices.cpp
-        Services/NetworkTopologyServices/NetworkTopologyServices.h
-        Services/ApplicationTopologyServices/ApplicationTopologyServices.cpp
-        Services/ApplicationTopologyServices/ApplicationTopologyServices.h
-        Models/VertexData/TaskVertexData.h
-        Services/SimulatorServices/SimulatorFunctions.cpp
-        Services/SimulatorServices/SimulatorFunctions.h
-        Services/FileReader/FileReader.cpp Services/FileReader/FileReader.h Models/VertexData/EdgePropertyData.h Models/Mappings/TaskMapping.h)
+add_executable(FirstHopMobileOffloading main.cpp Graph/Graph.cpp Graph/Graph.h Model/ComputationNode/ComputationNode.cpp Model/ComputationNode/ComputationNode.h enums/NodeTypes.h Graph/EdgeData/EdgeData.cpp Graph/EdgeData/EdgeData.h Graph/Graph.cpp Services/NetworkTopologyServices/NetworkTopologyServices.cpp Services/NetworkTopologyServices/NetworkTopologyServices.h Model/Task/Task.cpp Model/Task/Task.h enums/TaskStates.h utils/FileReader/FileReader.cpp utils/FileReader/FileReader.h Services/ApplicationTopologyServices/ApplicationTopologyServices.cpp Services/ApplicationTopologyServices/ApplicationTopologyServices.h Services/SimulatorServices/SimulatorServices.cpp Services/SimulatorServices/SimulatorServices.h enums/MappingType.h Model/TaskMapping/TaskMapping.cpp Model/TaskMapping/TaskMapping.h Services/AlgorithmServices/AlgorithmServices.cpp Services/AlgorithmServices/AlgorithmServices.h utils/HelperFunctions/HelperFunctions.cpp utils/HelperFunctions/HelperFunctions.h main.h enums/AlgorithmTypes.h Constants/AlgorithmMode/AlgorithmMode.cpp Constants/AlgorithmMode/AlgorithmMode.h Constants/ReactiveConstants.h Constants/GeneralConstants.h Constants/PreallocationConstants.h Services/PreallocationFunctions/PreallocationFunctions.cpp Services/PreallocationFunctions/PreallocationFunctions.h utils/JsonOutputFunctions/JsonOutputFunctions.cpp utils/JsonOutputFunctions/JsonOutputFunctions.h Services/PartitionFunctions/PartitionFunctions.cpp Services/PartitionFunctions/PartitionFunctions.h)
