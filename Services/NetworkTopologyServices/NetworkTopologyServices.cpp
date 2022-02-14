@@ -9,7 +9,8 @@
 Graph<ComputationNode, std::shared_ptr<EdgeData>> NetworkTopologyServices::generateNetwork() {
     Graph<ComputationNode, std::shared_ptr<EdgeData>> nG = Graph<ComputationNode, std::shared_ptr<EdgeData>>(false);
 
-    auto *cloudNodeA = new ComputationNode(INT_MAX, INT_MAX, INT_MAX, cloud);
+    auto *cloudNodeA = new ComputationNode(std::numeric_limits<int>::max(), std::numeric_limits<float>::max(),
+                                           std::numeric_limits<float>::max(), cloud);
     auto *edgeNode = new ComputationNode(2 * SERVERS_PER_CLOUDLET, 64 * SERVERS_PER_CLOUDLET,
                                          1000 * SERVERS_PER_CLOUDLET, edge);
     auto *mobileNode = new ComputationNode(1, 8, 128, mobile);
