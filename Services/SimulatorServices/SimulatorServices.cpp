@@ -77,7 +77,7 @@ void SimulatorServices::UpdateEvents(std::vector<std::shared_ptr<TaskMapping>> &
     if ((!incoming_applications.empty() && combinedList.empty()) ||
         (!incoming_applications.empty() && incoming_applications.front().first <= combinedList.front()->getSortTime()))
         checkIncomingApplications(applications, incoming_applications, time, completion_time);
-    else if (combinedList.front()->getSortTime() < completion_time) {
+    else if (combinedList.front()->getSortTime() <= completion_time) {
         std::shared_ptr<TaskMapping> tm = combinedList.front();
 
         time = tm->getSortTime();
