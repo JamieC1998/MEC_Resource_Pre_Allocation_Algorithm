@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 
     float simulation_time = 20;
     Graph<ComputationNode, std::shared_ptr<EdgeData>> nG = NetworkTopologyServices::generateNetwork();
-    std::vector<int> mobile_ids = NetworkTopologyServices::fetchIdsByType(mobile, nG);
+    std::vector<int> mobile_ids = NetworkTopologyServices::fetchIdsByType(node_type::mobile, nG);
     std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>> incoming_applications = ApplicationTopologyServices::generateApplications(
             input_file_name, simulation_time, mobile_ids[0]);
     std::vector<std::shared_ptr<Graph<Task, bool>>> applications;

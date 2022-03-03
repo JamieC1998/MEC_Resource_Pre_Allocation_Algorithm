@@ -3,17 +3,17 @@
 //
 
 #include "AlgorithmMode.h"
-algorithm_type AlgorithmMode::MODE = PREALLOCATION;
+algorithm_type AlgorithmMode::MODE = algorithm_type::PREALLOCATION;
 
-void AlgorithmMode::setAlgorithmMode(std::string algorithm_name) {
+void AlgorithmMode::setAlgorithmMode(const std::string& algorithm_name) {
     if(algorithm_name == "reactive_basic")
-        AlgorithmMode::MODE = REACTIVE_BASIC;
+        AlgorithmMode::MODE = algorithm_type::REACTIVE_BASIC;
     else if(algorithm_name == "reactive_mobile")
-        AlgorithmMode::MODE = REACTIVE_MOBILE;
+        AlgorithmMode::MODE = algorithm_type::REACTIVE_MOBILE;
     else if(algorithm_name == "partition")
-        AlgorithmMode::MODE = PARTITION;
+        AlgorithmMode::MODE = algorithm_type::PARTITION;
     else if(algorithm_name == "proactive")
-        AlgorithmMode::MODE = PROACTIVE;
+        AlgorithmMode::MODE = algorithm_type::PROACTIVE;
     else
-        AlgorithmMode::MODE = PREALLOCATION;
+        AlgorithmMode::MODE = algorithm_type::PREALLOCATION;
 }

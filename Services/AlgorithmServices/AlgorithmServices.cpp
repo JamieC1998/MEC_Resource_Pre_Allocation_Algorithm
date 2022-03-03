@@ -21,14 +21,14 @@ void AlgorithmServices::runAlgorithm(std::vector<std::shared_ptr<Task>> &readyTa
 
     HelperFunctions::processReadyTasks(readyTaskList, applications);
     std::vector<int> order_list;
-    if (AlgorithmMode::MODE == REACTIVE_MOBILE || AlgorithmMode::MODE == PREALLOCATION ||
-        AlgorithmMode::MODE == PARTITION || AlgorithmMode::MODE == PROACTIVE) {
+    if (AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE || AlgorithmMode::MODE == algorithm_type::PREALLOCATION ||
+        AlgorithmMode::MODE == algorithm_type::PARTITION || AlgorithmMode::MODE == algorithm_type::PROACTIVE) {
         order_list = HelperFunctions::sortReadyTasksByOffload(readyTaskList);
     }
 
     for (int i = 0; i < readyTaskList.size(); i++) {
-        std::shared_ptr<Task> task = (AlgorithmMode::MODE == REACTIVE_MOBILE || AlgorithmMode::MODE == PREALLOCATION ||
-                                      AlgorithmMode::MODE == PARTITION || AlgorithmMode::MODE == PROACTIVE)
+        std::shared_ptr<Task> task = (AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE || AlgorithmMode::MODE == algorithm_type::PREALLOCATION ||
+                                      AlgorithmMode::MODE == algorithm_type::PARTITION || AlgorithmMode::MODE == algorithm_type::PROACTIVE)
                                      ? readyTaskList[order_list[i]]
                                      : readyTaskList[i];
 
@@ -48,24 +48,24 @@ void AlgorithmServices::taskMapping(float time, Graph<ComputationNode, std::shar
 
     int result = NO_RESERVATION_FOUND;
 
-    if (AlgorithmMode::MODE == PREALLOCATION || AlgorithmMode::MODE == PARTITION || AlgorithmMode::MODE == PROACTIVE)
+    if (AlgorithmMode::MODE == algorithm_type::PREALLOCATION || AlgorithmMode::MODE == algorithm_type::PARTITION || AlgorithmMode::MODE == algorithm_type::PROACTIVE)
         result = HelperFunctions::IsTaskReserved(reservationQueue, (short) selectedTask->getTotalTaskId());
 
-    if ((AlgorithmMode::MODE == PREALLOCATION || AlgorithmMode::MODE == PARTITION ||
-         AlgorithmMode::MODE == PROACTIVE) && result != NO_RESERVATION_FOUND) {
+    if ((AlgorithmMode::MODE == algorithm_type::PREALLOCATION || AlgorithmMode::MODE == algorithm_type::PARTITION ||
+         AlgorithmMode::MODE == algorithm_type::PROACTIVE) && result != NO_RESERVATION_FOUND) {
         if (reservationQueue[result]->getProcessingStart() != time)
             return;
 
         tm = reservationQueue[result];
-        tm->setMappingType(in_progress);
+        tm->setMappingType(mapping_type::in_progress);
         HelperFunctions::removeMappingFromList(reservationQueue, tm);
     } else {
         std::vector<int> parent_ids = applications[selectedTask->getApplicationId()]->getInEdgesID(
                 selectedTask->getId());
 
-        tm = std::make_shared<TaskMapping>(TaskMapping((int) parent_ids.size(), selectedTask, in_progress));
+        tm = std::make_shared<TaskMapping>(TaskMapping((int) parent_ids.size(), selectedTask, mapping_type::in_progress));
 
-        if (AlgorithmMode::MODE == REACTIVE_MOBILE || AlgorithmMode::MODE == REACTIVE_BASIC)
+        if (AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE || AlgorithmMode::MODE == algorithm_type::REACTIVE_BASIC)
             tm->parent_mappings = (std::vector<std::shared_ptr<TaskMapping>>) HelperFunctions::fetchParentMappings(
                     finished, tm->parent_mappings, parent_ids, selectedTask->getApplicationId());
 
@@ -77,15 +77,15 @@ void AlgorithmServices::taskMapping(float time, Graph<ComputationNode, std::shar
         network_graph.vertices.at(tm->getComputationNodeId())->taskQueue.push_back((tm));
 
     }
-    tm->getTask()->setState(processing);
+    tm->getTask()->setState(task_state::processing);
     inProgress.push_back(tm);
 
-    if (AlgorithmMode::MODE == PREALLOCATION)
+    if (AlgorithmMode::MODE == algorithm_type::PREALLOCATION)
         PreallocationFunctions::preallocateChildren(time, network_graph, tm, reservationQueue, applications,
                                                     inProgress, pendingReservationQueue);
 
     /* We only need to run the partition algorithm on the first node */
-    if ((AlgorithmMode::MODE == PARTITION || AlgorithmMode::MODE == PROACTIVE) && tm->getTask()->getId() == 0)
+    if ((AlgorithmMode::MODE == algorithm_type::PARTITION || AlgorithmMode::MODE == algorithm_type::PROACTIVE) && tm->getTask()->getId() == 0)
         PartitionFunctions::proactiveAllocation(time, network_graph, tm, reservationQueue, applications, inProgress,
                                                 pendingReservationQueue);
 }
@@ -107,7 +107,7 @@ bool AlgorithmServices::ChooseNode(Graph<ComputationNode, std::shared_ptr<EdgeDa
         if (AlgorithmServices::isValidNode(task, start_and_finish_time, node, dag_node_count)) {
             float finish_time = start_and_finish_time.second;
 
-            if ((AlgorithmMode::MODE == REACTIVE_MOBILE || AlgorithmMode::MODE == REACTIVE_BASIC) &&
+            if ((AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE || AlgorithmMode::MODE == algorithm_type::REACTIVE_BASIC) &&
                 vertex_id != task->getTask()->getSourceMobileId())
                 finish_time = upload_windows.at(RETURN_TO_MOBILE)[0]->second;
 
@@ -169,7 +169,7 @@ AlgorithmServices::calculateRunTime(std::shared_ptr<TaskMapping> task, std::shar
 
     upload_windows = AlgorithmServices::calculateParentUploadTimes(time, task, node, network_graph, ot_up);
 
-    if (AlgorithmMode::MODE == REACTIVE_BASIC || AlgorithmMode::MODE == REACTIVE_MOBILE)
+    if (AlgorithmMode::MODE == algorithm_type::REACTIVE_BASIC || AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE)
         upload_windows = AlgorithmServices::calculateOutputReturnTime(time, task, node, network_graph, upload_windows,
                                                                       ot_up + rt_local);
 
@@ -192,7 +192,7 @@ AlgorithmServices::calculateParentUploadTimes(float current_time, std::shared_pt
                                                                               : parent->getFinishValue();
 
         //If it is either of the reactive algorithms, it must upload from the source node every time as they don't use input chaining
-        auto source_id = (short) ((AlgorithmMode::MODE == REACTIVE_BASIC || AlgorithmMode::MODE == REACTIVE_MOBILE)
+        auto source_id = (short) ((AlgorithmMode::MODE == algorithm_type::REACTIVE_BASIC || AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE)
                                   ? parent->getTask()->getSourceMobileId() : parent->getComputationNodeId());
 
         if (source_id != destination_node->getId()) {
@@ -256,13 +256,13 @@ AlgorithmServices::calculateOutputReturnTime(float time, const std::shared_ptr<T
 bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair<float, float> time_window,
                                     const std::shared_ptr<ComputationNode> &node, unsigned long dag_node_count) {
 
-    if (AlgorithmMode::MODE == PARTITION) {
+    if (AlgorithmMode::MODE == algorithm_type::PARTITION) {
         int split = std::ceil(dag_node_count / 2);
         if (task->getTask()->getId() <= split) {
             if (node->getId() != task->getTask()->getSourceMobileId())
                 return false;
         } else if (task->getTask()->getId() > split) {
-            if (node->getNodeType() != cloud && task->getTask()->isOffload()) {
+            if (node->getNodeType() != node_type::cloud && task->getTask()->isOffload()) {
                 return false;
             }
         }
@@ -329,7 +329,7 @@ bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair
     }
 
     //If the node must be processed locally, we check if this is the source node.
-    if (!task->getTask()->isOffload() && node->getNodeType() == mobile) {
+    if (!task->getTask()->isOffload() && node->getNodeType() == node_type::mobile) {
         if (node->getId() != task->getTask()->getSourceMobileId())
             return false;
 
@@ -341,7 +341,7 @@ bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair
     }
 
         //If the task can't be offloaded but the node in question is not the mobile
-    else if (!task->getTask()->isOffload() && node->getNodeType() != mobile) {
+    else if (!task->getTask()->isOffload() && node->getNodeType() != node_type::mobile) {
         return false;
     }
 

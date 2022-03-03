@@ -5,6 +5,6 @@
 #ifndef UNTITLED2_TASKSTATES_H
 #define UNTITLED2_TASKSTATES_H
 
-enum task_state { unprocessed, reserved, processing, processed };
+enum class task_state : int { unprocessed, reserved, processing, processed };
 
 #endif //UNTITLED2_TASKSTATES_H

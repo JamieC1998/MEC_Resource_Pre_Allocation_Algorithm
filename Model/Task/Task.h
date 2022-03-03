@@ -37,7 +37,7 @@ private:
     //Megabytes
     float storage;
 
-    task_state state = unprocessed;
+    task_state state = task_state::unprocessed;
 
     //True means it can be offloaded, false must be processed on source
     bool offload;
@@ -54,7 +54,7 @@ public:
 
     std::string to_string();
 
-    float getProcessTime(node_type nodeType);
+    float getProcessTime(node_type nodeType) const;
 
     int getId() const;
 

@@ -18,7 +18,7 @@ Task::Task(std::string name, float process_time_cloud, float process_time_edge, 
     internal_id_counter++;
 }
 
-float Task::getProcessTime(node_type nodeType){
+float Task::getProcessTime(node_type nodeType) const{
     if (nodeType == node_type::cloud)
         return this->process_time_cloud;
     else if (nodeType == node_type::edge)

@@ -51,9 +51,16 @@ void SimulatorServices::sortTaskMappingList(std::vector<std::shared_ptr<TaskMapp
              float task_a_val = taskMapA->getSortTime();
              float task_b_val = taskMapB->getSortTime();
 
+             /* If our tasks have matching mapping types then we sort them by smallest first
+              * However, if they do not match we have to check taskMap A's type
+              * If it is a reservation then we check to see if its smaller as if a reservation and an inprogress item
+              * both are "ready" at the same time, then the in progress should be processed first.
+              * Whereas if A is in progress then we check if its less or equal as in progress should always go left of
+              * equal reservations
+              */
              return (taskMapA->getMappingType() == taskMapB->getMappingType()) ? task_a_val < task_b_val
                                                                                : (taskMapA->getMappingType() ==
-                                                                                  reservation) ? task_a_val <
+                                                                                  mapping_type::reservation) ? task_a_val <
                                                                                                  task_b_val :
                                                                                  task_a_val <= task_b_val;
          });
@@ -81,8 +88,8 @@ void SimulatorServices::UpdateEvents(std::vector<std::shared_ptr<TaskMapping>> &
         std::shared_ptr<TaskMapping> tm = combinedList.front();
 
         time = tm->getSortTime();
-        if (tm->getMappingType() == in_progress) {
-            tm->getTask()->setState(processed);
+        if (tm->getMappingType() == mapping_type::in_progress) {
+            tm->getTask()->setState(task_state::processed);
             tm->setMappingType(mapping_type::finished);
             finished.push_back(tm);
             HelperFunctions::removeMappingFromList(networkGraph.vertices.at(tm->getComputationNodeId())->taskQueue, tm);

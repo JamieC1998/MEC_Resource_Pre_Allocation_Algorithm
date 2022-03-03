@@ -36,7 +36,7 @@ void HelperFunctions::processReadyTasks(std::vector<std::shared_ptr<Task>> &read
         for (const auto &key_task_pair: application->vertices) {
             int key = key_task_pair.first;
 
-            if (key_task_pair.second->getState() != unprocessed && key_task_pair.second->getState() != reserved)
+            if (key_task_pair.second->getState() != task_state::unprocessed && key_task_pair.second->getState() != task_state::reserved)
                 continue;
 
             if (!application->in_edges.count(key)) {
@@ -46,7 +46,7 @@ void HelperFunctions::processReadyTasks(std::vector<std::shared_ptr<Task>> &read
                 bool ready = true;
 
                 for (const auto &parentId: application->in_edges.at(key)) {
-                    if (application->vertices.at(parentId.first)->getState() != processed) {
+                    if (application->vertices.at(parentId.first)->getState() != task_state::processed) {
                         ready = false;
                         break;
                     }

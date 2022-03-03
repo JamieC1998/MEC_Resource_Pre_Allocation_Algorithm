@@ -5,6 +5,6 @@
 #ifndef UNTITLED2_MAPPINGTYPE_H
 #define UNTITLED2_MAPPINGTYPE_H
 
-enum mapping_type { reservation, in_progress, finished };
+enum class mapping_type : int { reservation, in_progress, finished };
 
 #endif //UNTITLED2_MAPPINGTYPE_H

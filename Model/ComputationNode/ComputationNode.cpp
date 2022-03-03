@@ -51,11 +51,11 @@ std::string ComputationNode::to_string() {
 }
 
 std::string ComputationNode::printType() const {
-    if (this->nodeType == cloud)
+    if (this->nodeType == node_type::cloud)
         return "cloud";
-    else if (this->nodeType == edge)
+    else if (this->nodeType == node_type::edge)
         return "edge";
-    else if (this->nodeType == mobile)
+    else if (this->nodeType == node_type::mobile)
         return "mobile";
     return "empty";
 }

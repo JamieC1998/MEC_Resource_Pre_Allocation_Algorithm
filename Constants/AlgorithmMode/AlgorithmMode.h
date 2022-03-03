@@ -13,7 +13,7 @@ class AlgorithmMode {
 public:
     static algorithm_type MODE;
 
-    static void setAlgorithmMode(std::string algorithm_name);
+    static void setAlgorithmMode(const std::string& algorithm_name);
 };
 
 

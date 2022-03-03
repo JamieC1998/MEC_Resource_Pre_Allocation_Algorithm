@@ -10,14 +10,14 @@ Graph<ComputationNode, std::shared_ptr<EdgeData>> NetworkTopologyServices::gener
     Graph<ComputationNode, std::shared_ptr<EdgeData>> nG = Graph<ComputationNode, std::shared_ptr<EdgeData>>(false);
 
     auto *cloudNodeA = new ComputationNode(std::numeric_limits<int>::max(), std::numeric_limits<float>::max(),
-                                           std::numeric_limits<float>::max(), cloud);
+                                           std::numeric_limits<float>::max(), node_type::cloud);
     auto *edgeNode = new ComputationNode(2 * SERVERS_PER_CLOUDLET, 64 * SERVERS_PER_CLOUDLET,
-                                         1000 * SERVERS_PER_CLOUDLET, edge);
-    auto *mobileNode = new ComputationNode(1, 8, 128, mobile);
+                                         1000 * SERVERS_PER_CLOUDLET, node_type::edge);
+    auto *mobileNode = new ComputationNode(1, 8, 128, node_type::mobile);
     auto *edgeNodeB = new ComputationNode(2 * SERVERS_PER_CLOUDLET, 64 * SERVERS_PER_CLOUDLET,
-                                          1000 * SERVERS_PER_CLOUDLET, edge);
+                                          1000 * SERVERS_PER_CLOUDLET, node_type::edge);
     auto *edgeNodeC = new ComputationNode(2 * SERVERS_PER_CLOUDLET, 64 * SERVERS_PER_CLOUDLET,
-                                          1000 * SERVERS_PER_CLOUDLET, edge);
+                                          1000 * SERVERS_PER_CLOUDLET, node_type::edge);
 
     nG.addVertex(cloudNodeA);
     nG.addVertex(edgeNode);

@@ -58,7 +58,7 @@ mapping_type TaskMapping::getMappingType() const {
 }
 
 float TaskMapping::getSortTime() {
-    return (this->mappingType == in_progress) ? this->getFinishValue(): this->processingStart;
+    return (this->mappingType == mapping_type::in_progress) ? this->getFinishValue(): this->processingStart;
 }
 
 void TaskMapping::setMappingType(mapping_type mappingType) {
@@ -114,7 +114,7 @@ void TaskMapping::setOutputUploadFinish(float outputUploadFinish) {
 }
 
 float TaskMapping::getFinishValue() {
-    if(AlgorithmMode::MODE == REACTIVE_BASIC || AlgorithmMode::MODE == REACTIVE_MOBILE)
+    if(AlgorithmMode::MODE == algorithm_type::REACTIVE_BASIC || AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE)
         return this->computationNodeId != this->task->getSourceMobileId() ? this->outputUploadFinish : this->processingFinish;
     return this->processingFinish;
 }

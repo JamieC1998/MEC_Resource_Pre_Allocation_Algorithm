@@ -48,10 +48,10 @@ int PreallocationFunctions::createUpdateChildReservation(
         std::vector<int> parent_ids = application_list[child->getApplicationId()]->getInEdgesID(
                 child->getId());
 
-        child->setState(reserved);
-        reservedChild = std::make_shared<TaskMapping>(TaskMapping((int) parent_ids.size(), child, in_progress));
+        child->setState(task_state::reserved);
+        reservedChild = std::make_shared<TaskMapping>(TaskMapping((int) parent_ids.size(), child, mapping_type::in_progress));
         reservedChild->parent_mappings.push_back(parent_mapping);
-        reservedChild->setMappingType(reservation);
+        reservedChild->setMappingType(mapping_type::reservation);
         pendingReservationList.push_back(reservedChild);
         result = (int) pendingReservationList.size() - 1;
     } else {
@@ -59,7 +59,7 @@ int PreallocationFunctions::createUpdateChildReservation(
         reservedChild->parent_mappings.push_back(parent_mapping);
     }
 
-    if ((AlgorithmMode::MODE == PARTITION || AlgorithmMode::MODE == PROACTIVE) && parent_mapping->getFinishValue() > reservedChild->getInputUploadStart())
+    if ((AlgorithmMode::MODE == algorithm_type::PARTITION || AlgorithmMode::MODE == algorithm_type::PROACTIVE) && parent_mapping->getFinishValue() > reservedChild->getInputUploadStart())
         reservedChild->setInputUploadStart(parent_mapping->getFinishValue());
 
     return result;
@@ -86,6 +86,6 @@ void PreallocationFunctions::preallocateChild(int child_mapping_index, float sta
 
     /* NEED MANAGE PENDING QUEUE POST PARTITION ALLOCATION
      * OTHERWISE INDEX OUT OF BOUNDS */
-    if (AlgorithmMode::MODE != PARTITION && AlgorithmMode::MODE != PROACTIVE)
+    if (AlgorithmMode::MODE != algorithm_type::PARTITION && AlgorithmMode::MODE != algorithm_type::PROACTIVE)
         pendingReservationList.erase(pendingReservationList.begin() + child_mapping_index);
 }
