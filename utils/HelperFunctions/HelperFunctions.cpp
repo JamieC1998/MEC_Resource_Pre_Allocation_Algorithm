@@ -3,7 +3,7 @@
 //
 
 #include "HelperFunctions.h"
-#include "../../Constants/PreallocationConstants.h"
+#include "../../Constants/GeneralConstants.h"
 #include <vector>
 
 void HelperFunctions::removeMappingFromList(std::vector<std::shared_ptr<TaskMapping>> &mappingList,

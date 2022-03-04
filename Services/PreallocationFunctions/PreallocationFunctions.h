@@ -10,23 +10,22 @@
 #include "../../Model/ComputationNode/ComputationNode.h"
 #include "../../Graph/EdgeData/EdgeData.h"
 
-class PreallocationFunctions {
-public:
-    static void preallocateChildren(float time, Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
+namespace PreallocationFunctions {
+    void preallocateChildren(float time, Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
                                     std::shared_ptr<TaskMapping> &parent_mapping,
                                     std::vector<std::shared_ptr<TaskMapping>> &reservation_queue,
                                     std::vector<std::shared_ptr<Graph<Task, bool>>> &application_list,
                                     std::vector<std::shared_ptr<TaskMapping>> &inProgressList,
                                     std::vector<std::shared_ptr<TaskMapping>> &pendingReservationList);
 
-    static int
+    int
     createUpdateChildReservation(
             std::shared_ptr<TaskMapping> &parent_mapping,
             std::vector<std::shared_ptr<Graph<Task, bool>>> &application_list,
             std::shared_ptr<Task> &child,
             std::vector<std::shared_ptr<TaskMapping>> &pendingReservationList);
 
-    static void preallocateChild(int child_mapping_index, float start_time,
+    void preallocateChild(int child_mapping_index, float start_time,
                                  Graph<ComputationNode, std::shared_ptr<EdgeData>> &network_graph,
                                  std::vector<std::shared_ptr<TaskMapping>> &in_progress,
                                  std::vector<std::shared_ptr<TaskMapping>> &reservation_queue,

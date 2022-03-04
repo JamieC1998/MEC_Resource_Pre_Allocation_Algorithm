@@ -11,27 +11,26 @@
 #include "../../Graph/Graph.h"
 #include "../../Model/Task/Task.h"
 
-class SimulatorServices {
-public:
-    static std::vector<std::shared_ptr<TaskMapping>>
+namespace SimulatorServices {
+    std::vector<std::shared_ptr<TaskMapping>>
     programLoop(Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
                 std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>> &incoming_applications,
                 float simulation_time,
                 std::vector<std::shared_ptr<Graph<Task, bool>>> &applications);
 
-    static void sortTaskMappingList(std::vector<std::shared_ptr<TaskMapping>> &taskMapping);
+    void sortTaskMappingList(std::vector<std::shared_ptr<TaskMapping>> &taskMapping);
 
-    static void UpdateEvents(std::vector<std::shared_ptr<TaskMapping>> &inProgress,
-                             std::vector<std::shared_ptr<TaskMapping>> &finished,
-                             float &time, std::vector<std::shared_ptr<TaskMapping>> &reservationList,
-                             float completion_time,
-                             std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>> &incoming_applications,
-                             std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
-                             Graph<struct ComputationNode, std::shared_ptr<EdgeData>> &networkGraph);
+    void UpdateEvents(std::vector<std::shared_ptr<TaskMapping>> &inProgress,
+                      std::vector<std::shared_ptr<TaskMapping>> &finished,
+                      float &time, std::vector<std::shared_ptr<TaskMapping>> &reservationList,
+                      float completion_time,
+                      std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>> &incoming_applications,
+                      std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
+                      Graph<struct ComputationNode, std::shared_ptr<EdgeData>> &networkGraph);
 
-    static void checkIncomingApplications(std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
-                                          std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>> &incoming_applications,
-                                          float &current_time, float d);
+    void checkIncomingApplications(std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
+                                   std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>> &incoming_applications,
+                                   float &current_time, float d);
 };
 
 

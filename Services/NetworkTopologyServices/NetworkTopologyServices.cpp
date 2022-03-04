@@ -4,7 +4,7 @@
 
 #include "NetworkTopologyServices.h"
 #include "vector"
-#include "../../Constants/ReactiveConstants.h"
+#include "../../Constants/GeneralConstants.h"
 
 Graph<ComputationNode, std::shared_ptr<EdgeData>> NetworkTopologyServices::generateNetwork() {
     Graph<ComputationNode, std::shared_ptr<EdgeData>> nG = Graph<ComputationNode, std::shared_ptr<EdgeData>>(false);

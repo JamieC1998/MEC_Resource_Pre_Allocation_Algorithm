@@ -10,17 +10,14 @@
 #include "../../Model/ComputationNode/ComputationNode.h"
 #include "../../Graph/EdgeData/EdgeData.h"
 
-const int SERVERS_PER_CLOUDLET = 1;
+namespace NetworkTopologyServices {
+    Graph<ComputationNode, std::shared_ptr<EdgeData>> generateNetwork();
 
-class NetworkTopologyServices {
-public:
-    static Graph<ComputationNode, std::shared_ptr<EdgeData>> generateNetwork();
+    std::vector<int> fetchIdsByType(node_type type, Graph<ComputationNode, std::shared_ptr<EdgeData>> &nG);
 
-    static std::vector<int> fetchIdsByType(node_type type, Graph<ComputationNode, std::shared_ptr<EdgeData>> &nG);
+    std::pair<int, std::shared_ptr<std::pair<float, float>>> findLinkSlot(const std::shared_ptr<EdgeData>& edge, float parent_upload_start, float dataOut);
 
-    static std::pair<int, std::shared_ptr<std::pair<float, float>>> findLinkSlot(const std::shared_ptr<EdgeData>& edge, float parent_upload_start, float dataOut);
-
-    static void addUploadsToLink(const std::shared_ptr<TaskMapping>& mapping, Graph<ComputationNode, std::shared_ptr<EdgeData>> &nG);
+    void addUploadsToLink(const std::shared_ptr<TaskMapping>& mapping, Graph<ComputationNode, std::shared_ptr<EdgeData>> &nG);
 };
 
 

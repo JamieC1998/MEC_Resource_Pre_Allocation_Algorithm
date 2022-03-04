@@ -8,12 +8,11 @@
 #include <string>
 #include <vector>
 
-class FileReader {
-public:
-    static std::vector<std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>>>
+namespace FileReader {
+    std::vector<std::pair<float, std::vector<std::pair<std::vector<std::string>, std::vector<std::string>>>>>
     parseApplications(std::string file_name, float &time);
 
-    static std::vector<std::string> split_string(std::string source, char delimiter);
+    std::vector<std::string> split_string(std::string source, char delimiter);
 };
 
 

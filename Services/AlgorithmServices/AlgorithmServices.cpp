@@ -5,11 +5,10 @@
 #include "AlgorithmServices.h"
 #include "../../utils/HelperFunctions/HelperFunctions.h"
 #include "../NetworkTopologyServices/NetworkTopologyServices.h"
-#include "../../Constants/ReactiveConstants.h"
-#include "../../Constants/PreallocationConstants.h"
 #include "../../Constants/AlgorithmMode/AlgorithmMode.h"
 #include "../PreallocationFunctions/PreallocationFunctions.h"
 #include "../PartitionFunctions/PartitionFunctions.h"
+#include "../../Constants/GeneralConstants.h"
 
 void AlgorithmServices::runAlgorithm(std::vector<std::shared_ptr<Task>> &readyTaskList,
                                      std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
