@@ -7,7 +7,7 @@
 #include "../../Constants/GeneralConstants.h"
 #include "../AlgorithmServices/AlgorithmServices.h"
 #include "../NetworkTopologyServices/NetworkTopologyServices.h"
-#include "../../Constants/AlgorithmMode/AlgorithmMode.h"
+#include "../../Constants/AlgorithmFlag/AlgorithmFlag.h"
 #include <iostream>
 
 void PreallocationFunctions::preallocateChildren(float time, Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
@@ -59,7 +59,7 @@ int PreallocationFunctions::createUpdateChildReservation(
         reservedChild->parent_mappings.push_back(parent_mapping);
     }
 
-    if ((AlgorithmMode::MODE == algorithm_type::PARTITION || AlgorithmMode::MODE == algorithm_type::PROACTIVE) && parent_mapping->getFinishValue() > reservedChild->getInputUploadStart())
+    if (static_cast<bool>(AlgorithmFlag::algorithm_mode & FLAG_PROACTIVE_ALGORITHM) && parent_mapping->getFinishValue() > reservedChild->getInputUploadStart())
         reservedChild->setInputUploadStart(parent_mapping->getFinishValue());
 
     return result;
@@ -86,6 +86,6 @@ void PreallocationFunctions::preallocateChild(int child_mapping_index, float sta
 
     /* NEED MANAGE PENDING QUEUE POST PARTITION ALLOCATION
      * OTHERWISE INDEX OUT OF BOUNDS */
-    if (AlgorithmMode::MODE != algorithm_type::PARTITION && AlgorithmMode::MODE != algorithm_type::PROACTIVE)
+    if (AlgorithmFlag::algorithm_mode & FLAG_PREALLOCATION_ALGORITHM)
         pendingReservationList.erase(pendingReservationList.begin() + child_mapping_index);
 }

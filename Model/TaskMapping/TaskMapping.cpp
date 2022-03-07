@@ -3,7 +3,7 @@
 //
 
 #include "TaskMapping.h"
-#include "../../Constants/AlgorithmMode/AlgorithmMode.h"
+#include "../../Constants/AlgorithmFlag/AlgorithmFlag.h"
 #include <utility>
 
 TaskMapping::TaskMapping(int totalParentCount, std::shared_ptr<Task> task, mapping_type mappingType)
@@ -114,7 +114,7 @@ void TaskMapping::setOutputUploadFinish(float outputUploadFinish) {
 }
 
 float TaskMapping::getFinishValue() {
-    if(AlgorithmMode::MODE == algorithm_type::REACTIVE_BASIC || AlgorithmMode::MODE == algorithm_type::REACTIVE_MOBILE)
+    if(AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC)
         return this->computationNodeId != this->task->getSourceMobileId() ? this->outputUploadFinish : this->processingFinish;
     return this->processingFinish;
 }

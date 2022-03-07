@@ -6,8 +6,8 @@
 #include "Model/Task/Task.h"
 #include "Services/ApplicationTopologyServices/ApplicationTopologyServices.h"
 #include "Services/SimulatorServices/SimulatorServices.h"
-#include "Constants/AlgorithmMode/AlgorithmMode.h"
 #include "utils/JsonOutputFunctions/JsonOutputFunctions.h"
+#include "Constants/AlgorithmFlag/AlgorithmFlag.h"
 
 int main(int argc, char *argv[]) {
     const char *input_file_name = "/Users/jamiecotter/CLionProjects/untitled2/application_topology_batch_1_1";
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
         application_mode = argv[3];
     }
 
-    AlgorithmMode::setAlgorithmMode(application_mode);
+    AlgorithmFlag::setAlgorithmMode(application_mode);
 
     auto networkGraph = NetworkTopologyServices::generateNetwork();
     auto mobile_ids = NetworkTopologyServices::fetchIdsByType(node_type::mobile, networkGraph);
