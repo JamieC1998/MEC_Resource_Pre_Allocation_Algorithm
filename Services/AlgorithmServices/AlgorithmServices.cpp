@@ -48,7 +48,7 @@ void AlgorithmServices::taskMapping(float time, Graph<ComputationNode, std::shar
     if (AlgorithmFlag::algorithm_mode & FLAG_RESERVATION_CHECK)
         result = HelperFunctions::IsTaskReserved(reservationQueue, (short) selectedTask->getTotalTaskId());
 
-    if (static_cast<bool>(AlgorithmFlag::algorithm_mode & FLAG_RESERVATION_CHECK) && result != NO_RESERVATION_FOUND) {
+    if ((AlgorithmFlag::algorithm_mode & FLAG_RESERVATION_CHECK) && result != NO_RESERVATION_FOUND) {
         if (reservationQueue[result]->getProcessingStart() != time)
             return;
 
@@ -81,7 +81,7 @@ void AlgorithmServices::taskMapping(float time, Graph<ComputationNode, std::shar
                                                     inProgress, pendingReservationQueue);
 
     /* We only need to run the partition algorithm on the first node */
-    if (static_cast<bool>(AlgorithmFlag::algorithm_mode & FLAG_PROACTIVE_ALGORITHM) && tm->getTask()->getId() == 0)
+    if ((AlgorithmFlag::algorithm_mode & FLAG_PROACTIVE_ALGORITHM) && tm->getTask()->getId() == 0)
         PartitionFunctions::proactiveAllocation(time, network_graph, tm, reservationQueue, applications, inProgress,
                                                 pendingReservationQueue);
 }
@@ -103,7 +103,7 @@ bool AlgorithmServices::ChooseNode(Graph<ComputationNode, std::shared_ptr<EdgeDa
         if (AlgorithmServices::isValidNode(task, start_and_finish_time, node, dag_node_count)) {
             float finish_time = start_and_finish_time.second;
 
-            if (static_cast<bool>(AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC) &&
+            if ((AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC) &&
                 vertex_id != task->getTask()->getSourceMobileId())
                 finish_time = upload_windows.at(RETURN_TO_MOBILE)[0]->second;
 
@@ -188,7 +188,7 @@ AlgorithmServices::calculateParentUploadTimes(float current_time, std::shared_pt
                                                                               : parent->getFinishValue();
 
         //If it is either of the reactive algorithms, it must upload from the source node every time as they don't use input chaining
-        auto source_id = (short) (static_cast<bool>(AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC)
+        auto source_id = (short) ((AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC)
                                   ? parent->getTask()->getSourceMobileId() : parent->getComputationNodeId());
 
         if (source_id != destination_node->getId()) {

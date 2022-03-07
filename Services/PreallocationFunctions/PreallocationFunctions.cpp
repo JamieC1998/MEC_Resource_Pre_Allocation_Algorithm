@@ -59,7 +59,7 @@ int PreallocationFunctions::createUpdateChildReservation(
         reservedChild->parent_mappings.push_back(parent_mapping);
     }
 
-    if (static_cast<bool>(AlgorithmFlag::algorithm_mode & FLAG_PROACTIVE_ALGORITHM) && parent_mapping->getFinishValue() > reservedChild->getInputUploadStart())
+    if ((AlgorithmFlag::algorithm_mode & FLAG_PROACTIVE_ALGORITHM) && parent_mapping->getFinishValue() > reservedChild->getInputUploadStart())
         reservedChild->setInputUploadStart(parent_mapping->getFinishValue());
 
     return result;
