@@ -43,17 +43,17 @@ int PreallocationFunctions::createUpdateChildReservation(
 
     std::shared_ptr<TaskMapping> reservedChild;
 
-    int result = HelperFunctions::IsTaskReserved(pendingReservationList, (short) child->getTotalTaskId());
+    int result = HelperFunctions::IsTaskReserved(pendingReservationList, static_cast<short> (child->getTotalTaskId()));
     if (result == NO_RESERVATION_FOUND) {
         std::vector<int> parent_ids = application_list[child->getApplicationId()]->getInEdgesID(
                 child->getId());
 
         child->setState(task_state::reserved);
-        reservedChild = std::make_shared<TaskMapping>(TaskMapping((int) parent_ids.size(), child, mapping_type::in_progress));
+        reservedChild = std::make_shared<TaskMapping>(TaskMapping(static_cast<int> (parent_ids.size()), child, mapping_type::in_progress));
         reservedChild->parent_mappings.push_back(parent_mapping);
         reservedChild->setMappingType(mapping_type::reservation);
         pendingReservationList.push_back(reservedChild);
-        result = (int) pendingReservationList.size() - 1;
+        result = static_cast<int>(pendingReservationList.size() - 1);
     } else {
         reservedChild = pendingReservationList[result];
         reservedChild->parent_mappings.push_back(parent_mapping);

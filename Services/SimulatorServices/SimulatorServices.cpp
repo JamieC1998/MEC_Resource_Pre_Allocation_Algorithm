@@ -16,7 +16,7 @@ SimulatorServices::programLoop(Graph<ComputationNode, std::shared_ptr<EdgeData>>
     int total_task_count = 0;
 
     for (const auto &application: incoming_applications)
-        total_task_count += (int) application.second->vertices.size();
+        total_task_count += static_cast<int>(application.second->vertices.size());
 
     //Time in milliseconds
     float time = 0.0f;

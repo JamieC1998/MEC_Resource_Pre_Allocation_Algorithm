@@ -46,7 +46,7 @@ void AlgorithmServices::taskMapping(float time, Graph<ComputationNode, std::shar
     int result = NO_RESERVATION_FOUND;
 
     if (AlgorithmFlag::algorithm_mode & FLAG_RESERVATION_CHECK)
-        result = HelperFunctions::IsTaskReserved(reservationQueue, (short) selectedTask->getTotalTaskId());
+        result = HelperFunctions::IsTaskReserved(reservationQueue, static_cast<short> (selectedTask->getTotalTaskId()));
 
     if ((AlgorithmFlag::algorithm_mode & FLAG_RESERVATION_CHECK) && result != NO_RESERVATION_FOUND) {
         if (reservationQueue[result]->getProcessingStart() != time)
@@ -59,7 +59,8 @@ void AlgorithmServices::taskMapping(float time, Graph<ComputationNode, std::shar
         std::vector<int> parent_ids = applications[selectedTask->getApplicationId()]->getInEdgesID(
                 selectedTask->getId());
 
-        tm = std::make_shared<TaskMapping>(TaskMapping((int) parent_ids.size(), selectedTask, mapping_type::in_progress));
+        tm = std::make_shared<TaskMapping>(
+                TaskMapping(static_cast<int>(parent_ids.size()), selectedTask, mapping_type::in_progress));
 
         if (AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC)
             tm->parent_mappings = (std::vector<std::shared_ptr<TaskMapping>>) HelperFunctions::fetchParentMappings(
@@ -182,14 +183,15 @@ AlgorithmServices::calculateParentUploadTimes(float current_time, std::shared_pt
     HelperFunctions::createTempOccupancyTimes(network_graph);
     std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>> upload_windows;
 
-    for (auto &parent : tm->parent_mappings) {
+    for (auto &parent: tm->parent_mappings) {
         //If a parent doesn't finish uploading until after the current time, then we cannot begin uploading it.
         float parent_upload_start = (parent->getFinishValue() < current_time) ? current_time
                                                                               : parent->getFinishValue();
 
         //If it is either of the reactive algorithms, it must upload from the source node every time as they don't use input chaining
-        auto source_id = (short) ((AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC)
-                                  ? parent->getTask()->getSourceMobileId() : parent->getComputationNodeId());
+        auto source_id = static_cast<short> (((AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC)
+                                              ? parent->getTask()->getSourceMobileId()
+                                              : parent->getComputationNodeId()));
 
         if (source_id != destination_node->getId()) {
             std::shared_ptr<EdgeData> edge = network_graph.out_edges.at(source_id).at(
@@ -279,22 +281,21 @@ bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair
     for (const auto &item: node->taskQueue) {
         if (time_window.first <= item->getProcessingFinish() && item->getProcessingStart() <= time_window.second) {
             for (int i = 0; i < 2; i++) {
-                resource_events.push_back({1, item->getTask()->getRam(), item->getTask()->getStorage(), (bool) i,
-                                           ((bool) i) ? (item->getProcessingStart() < time_window.first)
-                                                        ? time_window.first
-                                                        : item->getProcessingStart()
-                                                      : (item->getProcessingFinish() > time_window.second)
-                                                        ? time_window.second
-                                                        : item->getProcessingFinish()});
+                resource_events.push_back(
+                        {1, item->getTask()->getRam(), item->getTask()->getStorage(), static_cast<bool>(i),
+                         static_cast<bool>(i) ? (item->getProcessingStart() < time_window.first)
+                                                ? time_window.first
+                                                : item->getProcessingStart()
+                                              : (item->getProcessingFinish() > time_window.second)
+                                                ? time_window.second
+                                                : item->getProcessingFinish()});
             }
         }
     }
 
     sort(std::begin(resource_events), std::end(resource_events),
          [](const ResourceEvent &a, const ResourceEvent &b) -> bool {
-             if (a.time == b.time)
-                 return a.is_increase;
-             return a.time < b.time;
+             return (a.time == b.time) ? a.is_increase : a.time < b.time;
          });
 
     float max_ram_usage = 0;

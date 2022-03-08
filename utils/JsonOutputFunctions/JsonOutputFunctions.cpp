@@ -65,10 +65,10 @@ int JsonOutputFunctions::totalTaskCount(std::vector<std::shared_ptr<Graph<Task, 
     int total_task_count = 0;
 
     for (const auto &app: processing_apps)
-        total_task_count += (int) app->vertices.size();
+        total_task_count += static_cast<int>(app->vertices.size());
 
     for (const auto &app: unprocessed_apps)
-        total_task_count += (int) app.second->vertices.size();
+        total_task_count += static_cast<int>(app.second->vertices.size());
 
     return total_task_count;
 }
