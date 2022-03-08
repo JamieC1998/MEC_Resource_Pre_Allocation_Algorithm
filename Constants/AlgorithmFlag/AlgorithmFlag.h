@@ -18,7 +18,7 @@
 namespace AlgorithmFlag{
     extern unsigned int algorithm_mode;
 
-    void setAlgorithmMode(std::string mode);
+    void setAlgorithmMode(const std::string& mode);
 };
 
 #endif //FIRSTHOPMOBILEOFFLOADING_ALGORITHMFLAG_H

@@ -6,7 +6,7 @@
 
 unsigned int AlgorithmFlag::algorithm_mode = FLAG_MOBILE_PRIORITY | FLAG_RESERVATION_CHECK | FLAG_PREALLOCATION_ALGORITHM;
 
-void AlgorithmFlag::setAlgorithmMode(std::string algorithm_name) {
+void AlgorithmFlag::setAlgorithmMode(const std::string& algorithm_name) {
     AlgorithmFlag::algorithm_mode = 0;
 
     if(algorithm_name == "reactive_basic")
