@@ -253,6 +253,11 @@ AlgorithmServices::calculateOutputReturnTime(float time, const std::shared_ptr<T
 
 bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair<float, float> time_window,
                                     const std::shared_ptr<ComputationNode> &node, unsigned long dag_node_count) {
+    //If the node must be processed locally, we check if this is the source node.
+    bool non_offload_check = (!task->getTask()->isOffload() && node->getId() != task->getTask()->getSourceMobileId());
+
+    if(non_offload_check)
+        return false;
 
     if (AlgorithmFlag::algorithm_mode & FLAG_PARTITION_FUNCTION) {
         int split = std::ceil(dag_node_count / 2);
@@ -325,29 +330,9 @@ bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair
         }
     }
 
-    //If the node must be processed locally, we check if this is the source node.
-    if (!task->getTask()->isOffload() && node->getNodeType() == node_type::mobile) {
-        if (node->getId() != task->getTask()->getSourceMobileId())
-            return false;
-
-        else {
-            if (!HelperFunctions::checkCapacity((max_ram_usage + task->getTask()->getRam()), max_core_usage + 1,
-                                                max_storage_usage + task->getTask()->getStorage(), node))
-                return false;
-        }
-    }
-
-        //If the task can't be offloaded but the node in question is not the mobile
-    else if (!task->getTask()->isOffload() && node->getNodeType() != node_type::mobile) {
+    if (!HelperFunctions::checkCapacity((max_ram_usage + task->getTask()->getRam()), max_core_usage + 1,
+                                        max_storage_usage + task->getTask()->getStorage(), node))
         return false;
-    }
-
-        //Checking if it meets the resource requirements
-    else {
-        if (!HelperFunctions::checkCapacity((max_ram_usage + task->getTask()->getRam()), max_core_usage + 1,
-                                            max_storage_usage + task->getTask()->getStorage(), node))
-            return false;
-    }
 
     return true;
 }
