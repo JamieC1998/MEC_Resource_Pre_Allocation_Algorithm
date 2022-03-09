@@ -32,20 +32,20 @@ namespace AlgorithmServices {
                            float current_time, unsigned long i);
 
     std::pair<float, float>
-    calculateRunTime(std::shared_ptr<TaskMapping> task, std::shared_ptr<ComputationNode> node,
+    calculateRunTime(const std::shared_ptr<TaskMapping>& task, const std::shared_ptr<ComputationNode>& node,
                      Graph<ComputationNode, std::shared_ptr<EdgeData>> &network_graph, float time,
                      std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>> &upload_windows);
 
     std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>>
-    calculateParentUploadTimes(float current_time, std::shared_ptr<TaskMapping> tm,
+    calculateParentUploadTimes(float current_time, const std::shared_ptr<TaskMapping>& tm,
                                const std::shared_ptr<ComputationNode> &node,
                                Graph<ComputationNode, std::shared_ptr<EdgeData>> &network_graph, float &ot_up);
 
-    bool isValidNode(std::shared_ptr<TaskMapping> task, std::pair<float, float> time_window,
+    bool isValidNode(const std::shared_ptr<TaskMapping>& task, std::pair<float, float> time_window,
                             const std::shared_ptr<ComputationNode>& node, unsigned long i);
 
     std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>>
-    calculateOutputReturnTime(float time, const std::shared_ptr<TaskMapping> &task,
+    calculateOutputReturnTime(const std::shared_ptr<TaskMapping> &task,
                               const std::shared_ptr<ComputationNode> &computationNode,
                               Graph<ComputationNode, std::shared_ptr<EdgeData>> &network_graph,
                               std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>> upload_windows,

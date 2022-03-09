@@ -5,9 +5,8 @@
 #include "PartitionFunctions.h"
 #include "../PreallocationFunctions/PreallocationFunctions.h"
 #include "../../utils/HelperFunctions/HelperFunctions.h"
-#include <iostream>
 
-void PartitionFunctions::proactiveAllocation(float time, Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
+void PartitionFunctions::proactiveAllocation(Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
                                              std::shared_ptr<TaskMapping> &rootMapping,
                                              std::vector<std::shared_ptr<TaskMapping>> &reservationQueue,
                                              std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
@@ -45,7 +44,7 @@ PartitionFunctions::generateReadyReservations(std::vector<std::shared_ptr<TaskMa
     std::vector<int> res;
 
     std::sort(pendingReservations.begin(), pendingReservations.end(),
-              [](const std::shared_ptr<TaskMapping> a, std::shared_ptr<TaskMapping> b) -> bool {
+              [](const std::shared_ptr<TaskMapping> &a, const std::shared_ptr<TaskMapping> &b) -> bool {
                   return a->getInputUploadStart() < b->getInputUploadStart();
               });
     for (int i = 0; i < pendingReservations.size(); i++) {
@@ -78,7 +77,8 @@ void PartitionFunctions::partitionAllocateReadyTasks(std::shared_ptr<TaskMapping
                                                  network,
                                                  inProgress,
                                                  reservationQueue,
-                                                 pendingReservationsQueue, applications[parent->getTask()->getApplicationId()]->vertices.size());
+                                                 pendingReservationsQueue,
+                                                 applications[parent->getTask()->getApplicationId()]->vertices.size());
 
     std::vector<std::shared_ptr<Task>> children_tasks = applications[parent->getTask()->getApplicationId()]->getOutEdgesVertex(
             parent->getTask()->getId());

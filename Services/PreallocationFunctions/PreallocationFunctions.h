@@ -11,12 +11,12 @@
 #include "../../Graph/EdgeData/EdgeData.h"
 
 namespace PreallocationFunctions {
-    void preallocateChildren(float time, Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
-                                    std::shared_ptr<TaskMapping> &parent_mapping,
-                                    std::vector<std::shared_ptr<TaskMapping>> &reservation_queue,
-                                    std::vector<std::shared_ptr<Graph<Task, bool>>> &application_list,
-                                    std::vector<std::shared_ptr<TaskMapping>> &inProgressList,
-                                    std::vector<std::shared_ptr<TaskMapping>> &pendingReservationList);
+    void preallocateChildren(Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
+                             std::shared_ptr<TaskMapping> &parent_mapping,
+                             std::vector<std::shared_ptr<TaskMapping>> &reservation_queue,
+                             std::vector<std::shared_ptr<Graph<Task, bool>>> &application_list,
+                             std::vector<std::shared_ptr<TaskMapping>> &inProgressList,
+                             std::vector<std::shared_ptr<TaskMapping>> &pendingReservationList);
 
     int
     createUpdateChildReservation(

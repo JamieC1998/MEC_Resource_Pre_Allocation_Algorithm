@@ -8,9 +8,8 @@
 #include "../AlgorithmServices/AlgorithmServices.h"
 #include "../NetworkTopologyServices/NetworkTopologyServices.h"
 #include "../../Constants/AlgorithmFlag/AlgorithmFlag.h"
-#include <iostream>
 
-void PreallocationFunctions::preallocateChildren(float time, Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
+void PreallocationFunctions::preallocateChildren(Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
                                                  std::shared_ptr<TaskMapping> &parent_mapping,
                                                  std::vector<std::shared_ptr<TaskMapping>> &reservation_queue,
                                                  std::vector<std::shared_ptr<Graph<Task, bool>>> &application_list,

@@ -16,8 +16,6 @@ ComputationNode::ComputationNode(int gpuCount, float ram, float storage, node_ty
     id_counter++;
 }
 
-ComputationNode::ComputationNode(ComputationNode *pNode) {}
-
 int ComputationNode::getId() const {
     return id;
 }

@@ -78,12 +78,12 @@ void AlgorithmServices::taskMapping(float time, Graph<ComputationNode, std::shar
     inProgress.push_back(tm);
 
     if (AlgorithmFlag::algorithm_mode & FLAG_PREALLOCATION_ALGORITHM)
-        PreallocationFunctions::preallocateChildren(time, network_graph, tm, reservationQueue, applications,
+        PreallocationFunctions::preallocateChildren(network_graph, tm, reservationQueue, applications,
                                                     inProgress, pendingReservationQueue);
 
     /* We only need to run the partition algorithm on the first node */
     if ((AlgorithmFlag::algorithm_mode & FLAG_PROACTIVE_ALGORITHM) && tm->getTask()->getId() == 0)
-        PartitionFunctions::proactiveAllocation(time, network_graph, tm, reservationQueue, applications, inProgress,
+        PartitionFunctions::proactiveAllocation(network_graph, tm, reservationQueue, applications, inProgress,
                                                 pendingReservationQueue);
 }
 
@@ -157,7 +157,7 @@ bool AlgorithmServices::ChooseNode(Graph<ComputationNode, std::shared_ptr<EdgeDa
  * times for our inputs and outputs
  * */
 std::pair<float, float>
-AlgorithmServices::calculateRunTime(std::shared_ptr<TaskMapping> task, std::shared_ptr<ComputationNode> node,
+AlgorithmServices::calculateRunTime(const std::shared_ptr<TaskMapping>& task, const std::shared_ptr<ComputationNode>& node,
                                     Graph<ComputationNode, std::shared_ptr<EdgeData>> &network_graph, float time,
                                     std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>> &upload_windows) {
 
@@ -167,7 +167,7 @@ AlgorithmServices::calculateRunTime(std::shared_ptr<TaskMapping> task, std::shar
     upload_windows = AlgorithmServices::calculateParentUploadTimes(time, task, node, network_graph, ot_up);
 
     if (AlgorithmFlag::algorithm_mode & FLAG_REACTIVE_BASIC)
-        upload_windows = AlgorithmServices::calculateOutputReturnTime(time, task, node, network_graph, upload_windows,
+        upload_windows = AlgorithmServices::calculateOutputReturnTime(task, node, network_graph, upload_windows,
                                                                       ot_up + rt_local);
 
     //Return the process start time and finish time
@@ -175,7 +175,7 @@ AlgorithmServices::calculateRunTime(std::shared_ptr<TaskMapping> task, std::shar
 }
 
 std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>>
-AlgorithmServices::calculateParentUploadTimes(float current_time, std::shared_ptr<TaskMapping> tm,
+AlgorithmServices::calculateParentUploadTimes(float current_time, const std::shared_ptr<TaskMapping>& tm,
                                               const std::shared_ptr<ComputationNode> &destination_node,
                                               Graph<ComputationNode, std::shared_ptr<EdgeData>> &network_graph,
                                               float &ot_up) {
@@ -221,7 +221,7 @@ AlgorithmServices::calculateParentUploadTimes(float current_time, std::shared_pt
 }
 
 std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>>
-AlgorithmServices::calculateOutputReturnTime(float time, const std::shared_ptr<TaskMapping> &task,
+AlgorithmServices::calculateOutputReturnTime(const std::shared_ptr<TaskMapping> &task,
                                              const std::shared_ptr<ComputationNode> &computationNode,
                                              Graph<ComputationNode, std::shared_ptr<EdgeData>> &network_graph,
                                              std::unordered_map<int, std::vector<std::shared_ptr<std::pair<float, float>>>> upload_windows,
@@ -251,7 +251,7 @@ AlgorithmServices::calculateOutputReturnTime(float time, const std::shared_ptr<T
     return upload_windows;
 }
 
-bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair<float, float> time_window,
+bool AlgorithmServices::isValidNode(const std::shared_ptr<TaskMapping>& task, std::pair<float, float> time_window,
                                     const std::shared_ptr<ComputationNode> &node, unsigned long dag_node_count) {
     //If the node must be processed locally, we check if this is the source node.
     bool non_offload_check = (!task->getTask()->isOffload() && node->getId() != task->getTask()->getSourceMobileId());
@@ -333,6 +333,5 @@ bool AlgorithmServices::isValidNode(std::shared_ptr<TaskMapping> task, std::pair
     if (!HelperFunctions::checkCapacity((max_ram_usage + task->getTask()->getRam()), max_core_usage + 1,
                                         max_storage_usage + task->getTask()->getStorage(), node))
         return false;
-
     return true;
 }

@@ -13,12 +13,12 @@
 #include "../../Model/Task/Task.h"
 
 namespace PartitionFunctions {
-    void proactiveAllocation(float time, Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
-                                    std::shared_ptr<TaskMapping> &rootMapping,
-                                    std::vector<std::shared_ptr<TaskMapping>> &reservationQueue,
-                                    std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
-                                    std::vector<std::shared_ptr<TaskMapping>> &inProgress,
-                                    std::vector<std::shared_ptr<TaskMapping>> &pendingReservationsQueue);
+    void proactiveAllocation(Graph<ComputationNode, std::shared_ptr<EdgeData>> &network,
+                             std::shared_ptr<TaskMapping> &rootMapping,
+                             std::vector<std::shared_ptr<TaskMapping>> &reservationQueue,
+                             std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
+                             std::vector<std::shared_ptr<TaskMapping>> &inProgress,
+                             std::vector<std::shared_ptr<TaskMapping>> &pendingReservationsQueue);
 
     std::vector<int>
     generateReadyReservations(std::vector<std::shared_ptr<TaskMapping>> &pendingReservationQueue);

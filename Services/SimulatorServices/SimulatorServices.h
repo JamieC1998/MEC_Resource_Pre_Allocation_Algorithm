@@ -31,7 +31,7 @@ namespace SimulatorServices {
     void checkIncomingApplications(std::vector<std::shared_ptr<Graph<Task, bool>>> &applications,
                                    std::vector<std::pair<float, std::shared_ptr<Graph<Task, bool>>>> &incoming_applications,
                                    float &current_time, float d);
-};
+}
 
 
 #endif //UNTITLED2_SIMULATORSERVICES_H

@@ -20,8 +20,6 @@ float EdgeData::getBandwidth() const {
     return bandwidth;
 }
 
-EdgeData::EdgeData(EdgeData *pData) {}
-
 void EdgeData::clearTempOccupancyTimes() {
     this->temp_occupancy_times.clear();
 }
